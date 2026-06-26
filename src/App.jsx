@@ -24,6 +24,8 @@ import PageTransition from "./components/PageTransition";
 import { initBackButton, initDeepLinks } from "./native/capacitor";
 
 import MobileTabBar from "./components/MobileTabBar";
+import DispatchInbox from "./components/DispatchInbox";
+import { respondPing } from "./utils/dispatch";
 import AuthModal from "./components/AuthModal";
 import RoleSelectModal from "./components/RoleSelectModal";
 import OnboardingModal from "./components/OnboardingModal";
@@ -211,6 +213,24 @@ function AppShell() {
     if (trusted) await updateListing(listing.id, { status: "eslesti" });
     return { ok: true, autoApproved: trusted };
   };
+
+  // ── Doğrudan çağrı (dispatch): müteahhit çevrimiçi sürücüyü çağırır,
+  //    sürücü kabul edince eşleşme anında oluşur (offer "kabul" + ilan "eslesti").
+  const acceptDispatch = async (ping) => {
+    const me = profile || user;
+    if (!me || !ping) return;
+    const listing = listings.find((l) => String(l.id) === String(ping.listingId));
+    const offer = {
+      id: newId(), listingId: ping.listingId, fromUser: me.name, fromUserId: me.id,
+      price: listing && listing.priceType === "sabit" ? listing.price : (ping.price ?? null),
+      message: "İş çağrısını kabul ettim.", kind: "claim",
+      status: "kabul", createdAt: nowIso(), updatedAt: nowIso(), autoApproved: true,
+    };
+    await addOffer(offer);
+    await updateListing(ping.listingId, { status: "eslesti", acceptedById: me.id });
+    respondPing(ping.id, "accepted");
+  };
+  const rejectDispatch = (ping) => { if (ping) respondPing(ping.id, "rejected"); };
 
   // Mesajlar
   const [messages, setMessages] = useState(() => (SB ? [] : loadMessages()));
@@ -503,7 +523,7 @@ function AppShell() {
                 <Route path="/iletisim" element={<PageTransition><IletisimPage /></PageTransition>} />
                 <Route path="/piyasa" element={<PageTransition><PiyasaNabziPage listings={listings} offers={offers} /></PageTransition>} />
                 <Route path="/fiyat-simulasyonu" element={<PageTransition><FiyatSimulasyonuPage /></PageTransition>} />
-                <Route path="/arac-radari" element={<PageTransition><AracRadariPage user={profile || user} /></PageTransition>} />
+                <Route path="/arac-radari" element={<PageTransition><AracRadariPage user={profile || user} listings={listings} onRequireAuth={requireAuth} /></PageTransition>} />
                 <Route path="/yuk-radari" element={<PageTransition><TentaliDemo theme="saha" listings={listings} offers={offers} reviews={reviews} user={profile || user} onClaim={claimLoad} onRequireAuth={requireAuth} /></PageTransition>} />
                 <Route path="/uber-rota" element={<PageTransition><TentaliDemo theme="rota" listings={listings} offers={offers} reviews={reviews} user={profile || user} onClaim={claimLoad} onRequireAuth={requireAuth} /></PageTransition>} />
                 <Route path="/uber-yol" element={<PageTransition><TentaliDemo theme="yol" listings={listings} offers={offers} reviews={reviews} user={profile || user} onClaim={claimLoad} onRequireAuth={requireAuth} /></PageTransition>} />
@@ -534,6 +554,8 @@ function AppShell() {
       {showAuth && !showRole && <AuthModal onClose={() => setShowAuth(false)} onProvider={startOAuth} />}
       {showRole && <RoleSelectModal onSelect={chooseRole} />}
       {showOnboard && !showAuth && !showRole && <OnboardingModal onClose={finishOnboard} />}
+
+      <DispatchInbox user={profile || user} onAccept={acceptDispatch} onReject={rejectDispatch} />
     </div>
   );
 }

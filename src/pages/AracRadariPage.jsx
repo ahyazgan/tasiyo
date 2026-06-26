@@ -8,6 +8,7 @@ import { useState, useEffect, useMemo, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import { getCurrentPosition } from "../native/geo";
 import { subscribeOnline } from "../utils/presence";
+import { sendPing, getPingsFromUser, subscribeDispatch } from "../utils/dispatch";
 import { IL_COORDS } from "../data/ilCoords";
 import { getTheme } from "../data/brandThemes";
 import { useToast } from "../components/Toast";
@@ -35,7 +36,7 @@ const CAT_FILTERS = [
   { key: "silobas", label: "Silobas (döküme)" },
 ];
 
-export default function AracRadariPage({ user }) {
+export default function AracRadariPage({ user, listings = [], onRequireAuth }) {
   const navigate = useNavigate();
   const toast = useToast();
   const C = getTheme("saha");
@@ -46,11 +47,46 @@ export default function AracRadariPage({ user }) {
   const [radius, setRadius] = useState(150);
   const [gps, setGps] = useState(null);
   const [drivers, setDrivers] = useState([]);
+  const [myPings, setMyPings] = useState([]);
+  const [callDriver, setCallDriver] = useState(null); // iş seçim sheet'i için
 
   // Çevrimiçi sürücülere canlı abone ol (kendini hariç tut).
   useEffect(() => subscribeOnline(setDrivers, user?.id), [user?.id]);
+  // Gönderdiğim çağrıların durumuna abone ol (çalıyor/kabul/ret).
+  useEffect(() => subscribeDispatch(() => setMyPings(getPingsFromUser(user?.id))), [user?.id]);
+
+  // Sürücü id -> bana ait en güncel çağrı durumu.
+  const pingByDriver = useMemo(() => {
+    const m = new Map();
+    for (const p of [...myPings].sort((a, b) => a.createdAt - b.createdAt)) m.set(String(p.toId), p);
+    return m;
+  }, [myPings]);
+
+  // Müteahhitin çağrı gönderebileceği aktif iş ilanları.
+  const myJobs = useMemo(
+    () => listings.filter((l) => l.type === "is" && l.status === "aktif" && String(l.ownerId) === String(user?.id)),
+    [listings, user?.id]
+  );
 
   const base = gps || coordOf(city);
+
+  // Çağrı gönder: iş + sürücü → ping. Tek iş varsa direkt, çoğunda sheet açılır.
+  const callWithJob = (driver, job) => {
+    sendPing({
+      listingId: job.id, jobTitle: job.title, jobCat: job.cat,
+      fromId: user.id, fromName: user.name || "Yük veren", toId: driver.id, toName: driver.name,
+      price: job.priceType === "sabit" ? job.price : null, priceType: job.priceType,
+      originIl: job.il, dist: Number.isFinite(driver.dist) ? driver.dist : null,
+    });
+    setCallDriver(null);
+    toast(`${driver.name || "Sürücü"} çağrıldı — yanıtı bekleniyor.`, "success");
+  };
+  const onCall = (driver) => {
+    if (!user) { onRequireAuth?.(); return; }
+    if (myJobs.length === 0) { toast("Önce bir iş ilanı aç, sonra çağır.", "info"); navigate("/ilan-ver"); return; }
+    if (myJobs.length === 1) { callWithJob(driver, myJobs[0]); return; }
+    setCallDriver(driver);
+  };
 
   const findMe = async () => {
     const p = await getCurrentPosition();
@@ -129,29 +165,73 @@ export default function AracRadariPage({ user }) {
           </div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {ranked.map((d) => (
-              <div key={d.id} style={{ display: "flex", alignItems: "center", gap: 11, padding: "10px 12px", ...card, boxShadow: "3px 3px 0 rgba(10,10,10,.12)" }}>
-                <div style={{ width: 42, height: 42, flexShrink: 0, borderRadius: "50%", background: C.yellow, border: `2px solid ${C.ink}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={C.ink} strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round"><path d="M10 17h4V5H2v12h3M20 17h2v-3.34a4 4 0 0 0-1.17-2.83L19 9h-5v8h1"/><circle cx="7.5" cy="17.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontFamily: HEAD, fontSize: 14, fontWeight: 800, textTransform: "uppercase", letterSpacing: "-.01em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{d.name || "Nakliyeci"}</div>
-                  <div style={{ fontFamily: MONO, fontSize: 9.5, fontWeight: 700, color: C.sub, marginTop: 2 }}>
-                    ★ {(d.rating || 0).toFixed(1)} · {(d.cat || "araç").toLocaleUpperCase("tr-TR")}{d.capacity ? ` · ${d.capacity}` : ""}{d.target ? ` · ${d.target} yönü` : ""}
+            {ranked.map((d) => {
+              const p = pingByDriver.get(String(d.id));
+              const st = p?.status;
+              return (
+              <div key={d.id} style={{ padding: "10px 12px", ...card, boxShadow: "3px 3px 0 rgba(10,10,10,.12)" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 11 }}>
+                  <div style={{ width: 42, height: 42, flexShrink: 0, borderRadius: "50%", background: C.yellow, border: `2px solid ${C.ink}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={C.ink} strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round"><path d="M10 17h4V5H2v12h3M20 17h2v-3.34a4 4 0 0 0-1.17-2.83L19 9h-5v8h1"/><circle cx="7.5" cy="17.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontFamily: HEAD, fontSize: 14, fontWeight: 800, textTransform: "uppercase", letterSpacing: "-.01em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{d.name || "Nakliyeci"}</div>
+                    <div style={{ fontFamily: MONO, fontSize: 9.5, fontWeight: 700, color: C.sub, marginTop: 2 }}>
+                      ★ {(d.rating || 0).toFixed(1)} · {(d.cat || "araç").toLocaleUpperCase("tr-TR")}{d.capacity ? ` · ${d.capacity}` : ""}{d.target ? ` · ${d.target} yönü` : ""}
+                    </div>
+                  </div>
+                  <div style={{ textAlign: "right", flexShrink: 0 }}>
+                    <div style={{ fontFamily: HEAD, fontSize: 17, fontWeight: 900, color: C.ink, lineHeight: 1 }}>{Math.round(d.dist)}<span style={{ fontSize: 10, fontWeight: 700 }}> km</span></div>
+                    <div style={{ fontFamily: MONO, fontSize: 9, fontWeight: 700, color: C.green }}>~{etaMin(d.dist)} dk</div>
                   </div>
                 </div>
-                <div style={{ textAlign: "right", flexShrink: 0 }}>
-                  <div style={{ fontFamily: HEAD, fontSize: 17, fontWeight: 900, color: C.ink, lineHeight: 1 }}>{Math.round(d.dist)}<span style={{ fontSize: 10, fontWeight: 700 }}> km</span></div>
-                  <div style={{ fontFamily: MONO, fontSize: 9, fontWeight: 700, color: C.green }}>~{etaMin(d.dist)} dk</div>
+                {/* Çağrı aksiyonu / durumu */}
+                <div style={{ marginTop: 9 }}>
+                  {st === "accepted" ? (
+                    <button type="button" onClick={() => navigate("/sevkiyat")} style={{ width: "100%", fontFamily: HEAD, fontSize: 12.5, fontWeight: 800, textTransform: "uppercase", padding: "9px", borderRadius: 6, cursor: "pointer", background: C.green, color: "#fff", border: `2px solid ${C.ink}` }}>
+                      ✓ Kabul etti — sevkiyata git
+                    </button>
+                  ) : st === "ringing" ? (
+                    <div style={{ width: "100%", textAlign: "center", fontFamily: MONO, fontSize: 11, fontWeight: 700, color: C.sub, padding: "9px", borderRadius: 6, border: `2px solid ${C.border}`, background: C.stone }}>
+                      ⏳ Çağrı gönderildi · yanıt bekleniyor…
+                    </div>
+                  ) : (
+                    <button type="button" onClick={() => onCall(d)} style={{ width: "100%", fontFamily: HEAD, fontSize: 13, fontWeight: 800, textTransform: "uppercase", letterSpacing: ".02em", padding: "9px", borderRadius: 6, cursor: "pointer", background: C.yellow, color: C.ink, border: `2px solid ${C.ink}`, boxShadow: "2px 2px 0 rgba(10,10,10,.18)" }}>
+                      {st === "rejected" ? "Reddetti — tekrar çağır" : st === "expired" ? "Yanıt yok — tekrar çağır" : "Çağır →"}
+                    </button>
+                  )}
                 </div>
               </div>
-            ))}
+              );
+            })}
             <button type="button" onClick={() => navigate("/ilan-ver")} style={{ marginTop: 4, fontFamily: HEAD, fontSize: 14, fontWeight: 900, textTransform: "uppercase", letterSpacing: ".02em", padding: "13px", borderRadius: 6, cursor: "pointer", background: C.yellow, color: C.ink, border: `2px solid ${C.ink}`, boxShadow: "3px 3px 0 rgba(10,10,10,.2)" }}>
               İş İlanı Aç → araçlar teklif versin
             </button>
           </div>
         )}
       </div>
+
+      {/* İş seçim sheet'i — birden çok aktif iş varsa hangisine çağrılacağını seç */}
+      {callDriver && (
+        <div role="dialog" aria-label="İş seç" onClick={() => setCallDriver(null)} style={{ position: "fixed", inset: 0, zIndex: 9000, background: "rgba(10,10,10,.6)", display: "flex", alignItems: "flex-end", justifyContent: "center", padding: 14 }}>
+          <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 440, background: C.card, border: `2px solid ${C.ink}`, borderRadius: 12, overflow: "hidden", boxShadow: "0 -6px 0 rgba(10,10,10,.25)" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "11px 14px", background: C.ink }}>
+              <span style={{ fontFamily: MONO, fontSize: 11, fontWeight: 700, color: C.yellow }}>{(callDriver.name || "SÜRÜCÜ").toLocaleUpperCase("tr-TR")} İÇİN İŞ SEÇ</span>
+              <button type="button" onClick={() => setCallDriver(null)} aria-label="Kapat" style={{ marginLeft: "auto", background: "none", border: "none", color: "#fff", fontSize: 18, cursor: "pointer", lineHeight: 1 }}>×</button>
+            </div>
+            <div style={{ padding: "10px 12px 14px", display: "flex", flexDirection: "column", gap: 8, maxHeight: "50vh", overflowY: "auto" }}>
+              {myJobs.map((j) => (
+                <button key={j.id} type="button" onClick={() => callWithJob(callDriver, j)} style={{ textAlign: "left", padding: "10px 12px", borderRadius: 6, cursor: "pointer", background: C.stone, border: `2px solid ${C.ink}` }}>
+                  <div style={{ fontFamily: HEAD, fontSize: 14, fontWeight: 800, textTransform: "uppercase", letterSpacing: "-.01em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{j.title}</div>
+                  <div style={{ fontFamily: MONO, fontSize: 9.5, fontWeight: 700, color: C.sub, marginTop: 2 }}>
+                    {(j.il || "—").toLocaleUpperCase("tr-TR")} · {(j.cat || "").toLocaleUpperCase("tr-TR")} · {j.priceType === "sabit" && j.price ? `₺${Number(j.price).toLocaleString("tr-TR")}` : "TEKLİFE AÇIK"}
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
