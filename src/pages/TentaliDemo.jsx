@@ -7,8 +7,9 @@
 // yük veren bunu mevcut teklif ekranından onaylar (status:"kabul") → sevkiyat
 // akışı (DispatchPage/Takip) değişmeden çalışır. Teklif sistemine dokunulmaz.
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { getCurrentPosition } from "../native/geo";
 import { MapContainer, TileLayer, Marker, Polyline, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -33,6 +34,16 @@ function coordOf(il) {
   if (!il) return null;
   const key = IL_KEYS.find((k) => fold(k) === fold(il));
   return key ? IL_COORDS[key] : null;
+}
+// GPS noktasına en yakın il (etiket + yön filtresi referansı için).
+function nearestCity(pos) {
+  if (!pos) return null;
+  let best = null, bestD = Infinity;
+  for (const il of IL_KEYS) {
+    const d = distanceKm(pos, IL_COORDS[il]);
+    if (d < bestD) { bestD = d; best = il; }
+  }
+  return best;
 }
 
 // Araç tipi seçenekleri (filtre çubuğu). cat ile gevşek eşleşir.
@@ -93,6 +104,20 @@ function myPosIcon() {
   return L.divIcon({ html, className: "saha-marker", iconSize: [0, 0], iconAnchor: [0, 8] });
 }
 
+// Konum değişince haritayı oraya uçur (GPS bulununca / şehir seçilince).
+function Recenter({ pos, zoom, active }) {
+  const map = useMap();
+  const prev = useRef("");
+  useEffect(() => {
+    if (!pos) return;
+    const key = pos.join(",");
+    if (key === prev.current) return;
+    prev.current = key;
+    map.flyTo(pos, active ? zoom : map.getZoom(), { duration: 0.8 });
+  }, [pos, zoom, active, map]);
+  return null;
+}
+
 function ZoomControls() {
   const map = useMap();
   const btn = { width: 36, height: 36, background: C.card, border: `2px solid ${C.ink}`, color: C.ink, fontFamily: HEAD, fontSize: 20, fontWeight: 900, lineHeight: 1, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" };
@@ -124,8 +149,25 @@ export default function TentaliDemo({ listings = [], offers = [], user, onClaim,
   const [radius, setRadius] = useState(200);
   const [selected, setSelected] = useState(null);
 
-  const myPos = coordOf(myCity);
+  // GPS konumu: aktifse 'Konumum' şehir seçiminin yerine geçer (gerçek lat/lng).
+  const [gps, setGps] = useState(null);            // [lat,lng] | null
+  const [gpsStatus, setGpsStatus] = useState("idle"); // idle | loading | ok | denied
+
+  // Çözülen konum: GPS varsa o, yoksa seçili il merkezi.
+  const myPos = gps || coordOf(myCity);
   const targetPos = coordOf(targetCity);
+  const gpsCityLabel = gps ? nearestCity(gps) : null; // GPS chip + yön referansı
+
+  const findMyLocation = async () => {
+    setGpsStatus("loading");
+    const p = await getCurrentPosition();
+    if (!p) { setGpsStatus("denied"); toast("Konum alınamadı — izin verildi mi?", "error"); return; }
+    setGps([p.lat, p.lng]);
+    setGpsStatus("ok");
+    setSelected(null);
+    toast(`Konumun bulundu — ${nearestCity([p.lat, p.lng]) || "yakınındaki"} çevresi.`, "success");
+  };
+  const clearGps = () => { setGps(null); setGpsStatus("idle"); setSelected(null); };
 
   // Bu kullanıcının ilan başına claim durumu (listingId -> "beklemede"|"kabul"|"ret").
   // Tekrar kapamayı engellemek ve "onay bekleniyor" rozetini göstermek için.
@@ -196,10 +238,28 @@ export default function TentaliDemo({ listings = [], offers = [], user, onClaim,
         </p>
       </header>
 
+      {/* ── GPS satırı ── */}
+      <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 14px 0", background: C.stone }}>
+        {gps ? (
+          <div style={{ display: "flex", alignItems: "center", gap: 8, flex: 1, minWidth: 0, background: C.blue, color: "#fff", border: `2px solid ${C.ink}`, borderRadius: 6, padding: "8px 11px" }}>
+            <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#fff", flexShrink: 0, boxShadow: `0 0 0 2px ${C.ink}` }} />
+            <span style={{ fontFamily: MONO, fontSize: 11, fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              GPS AKTİF · {gpsCityLabel ? gpsCityLabel.toLocaleUpperCase("tr-TR") + " ÇEVRESİ" : "KONUMUN"}
+            </span>
+            <button type="button" onClick={clearGps} aria-label="GPS kapat" style={{ marginLeft: "auto", flexShrink: 0, background: "none", border: "none", color: "#fff", fontSize: 16, cursor: "pointer", lineHeight: 1 }}>×</button>
+          </div>
+        ) : (
+          <button type="button" onClick={findMyLocation} disabled={gpsStatus === "loading"} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 7, flex: 1, fontFamily: HEAD, fontSize: 13, fontWeight: 800, textTransform: "uppercase", letterSpacing: ".02em", padding: "10px 14px", borderRadius: 6, cursor: gpsStatus === "loading" ? "default" : "pointer", background: C.ink, color: C.yellow, border: `2px solid ${C.ink}`, boxShadow: "3px 3px 0 rgba(10,10,10,.2)" }}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={C.yellow} strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+            {gpsStatus === "loading" ? "Konum bulunuyor…" : gpsStatus === "denied" ? "Tekrar dene" : "Konumumu Bul"}
+          </button>
+        )}
+      </div>
+
       {/* ── Filtre çubuğu ── */}
       <div style={{ display: "flex", gap: 10, flexWrap: "wrap", padding: "10px 14px", background: C.stone, borderBottom: `2px solid ${C.ink}` }}>
-        <Field label="Konumum">
-          <select style={selStyle} value={myCity} onChange={(e) => { setMyCity(e.target.value); setSelected(null); }}>
+        <Field label={gps ? "Konumum (GPS)" : "Konumum"}>
+          <select style={{ ...selStyle, opacity: gps ? 0.5 : 1 }} value={myCity} disabled={Boolean(gps)} onChange={(e) => { setMyCity(e.target.value); setSelected(null); }}>
             {cityOptions.map((c) => <option key={c} value={c}>{c}</option>)}
           </select>
         </Field>
@@ -223,6 +283,7 @@ export default function TentaliDemo({ listings = [], offers = [], user, onClaim,
       <div style={{ position: "relative", height: "58vh", minHeight: 340, borderBottom: `2px solid ${C.ink}` }}>
         <MapContainer center={[39.3, 35.2]} zoom={6} scrollWheelZoom={false} zoomControl={false} style={{ height: "100%", width: "100%" }}>
           <TileLayer attribution="&copy; OpenStreetMap" url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+          <Recenter pos={myPos} zoom={gps ? 9 : 7} active={Boolean(gps)} />
           {myPos && <Marker position={myPos} icon={myPosIcon()} />}
           {sel && sel._d && sel._d !== sel._o && (
             <Polyline positions={[sel._o, sel._d]} pathOptions={{ color: C.ink, weight: 3, dashArray: "6 6" }} />
