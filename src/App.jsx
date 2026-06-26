@@ -14,6 +14,8 @@ import { chargeToEscrow, releaseFromEscrow, refundEscrow } from "./lib/paymentPr
 import { splitAmount, earlyPayout } from "./utils/payments";
 import { PAYMENTS_ENABLED } from "./config/features";
 import { buildNotifications } from "./utils/notifications";
+import { computeReliability } from "./utils/reliability";
+import { newId, nowIso } from "./utils/id";
 import usePushNotifications from "./hooks/usePushNotifications";
 import { ToastProvider } from "./components/Toast";
 import { ErrorBoundary, NotFoundPage } from "./components/ErrorBoundary";
@@ -184,6 +186,27 @@ function AppShell() {
   const updateOffer = async (id, patch) => {
     if (SB) { try { await api.updateOffer(id, patch); setOffers(prev => prev.map(o => o.id === id ? { ...o, ...patch } : o)); } catch (e) { console.error(e); } }
     else setOffers(prev => prev.map(o => o.id === id ? { ...o, ...patch, ...(patch.status ? { updatedAt: new Date().toISOString() } : {}) } : o));
+  };
+
+  // ── Yükü Al (Uber usulü claim) + otomatik onay kuralı ──
+  // Doğrulanmış VE güvenilir/yüksek puanlı kamyoncuda claim anında "kabul" olur
+  // (yük veren onayı beklemeden) → plandaki "otomatik onay". Aksi halde "beklemede".
+  const claimLoad = async (listing) => {
+    const me = profile || user;
+    if (!me) return { ok: false };
+    if (me.status === "banli") return { ok: false };
+    const rel = computeReliability(me.id, { listings, offers, reviews });
+    const trusted = Boolean(me.verified) && ((rel.score != null && rel.score >= 75) || (rel.avgRating != null && rel.avgRating >= 4.5));
+    const offer = {
+      id: newId(), listingId: listing.id, fromUser: me.name, fromUserId: me.id,
+      price: listing.priceType === "sabit" ? listing.price : null,
+      message: listing.priceType === "sabit" ? "Yükü aldım (sabit fiyat)." : "Yükü almak istiyorum.",
+      kind: "claim", status: trusted ? "kabul" : "beklemede", createdAt: nowIso(),
+      ...(trusted ? { updatedAt: nowIso(), autoApproved: true } : {}),
+    };
+    await addOffer(offer);
+    if (trusted) await updateListing(listing.id, { status: "eslesti" });
+    return { ok: true, autoApproved: trusted };
   };
 
   // Mesajlar
@@ -475,7 +498,7 @@ function AppShell() {
                 <Route path="/iletisim" element={<PageTransition><IletisimPage /></PageTransition>} />
                 <Route path="/piyasa" element={<PageTransition><PiyasaNabziPage listings={listings} offers={offers} /></PageTransition>} />
                 <Route path="/fiyat-simulasyonu" element={<PageTransition><FiyatSimulasyonuPage /></PageTransition>} />
-                <Route path="/yuk-radari" element={<PageTransition><TentaliDemo listings={listings} offers={offers} user={user} onAddOffer={addOffer} onRequireAuth={requireAuth} /></PageTransition>} />
+                <Route path="/yuk-radari" element={<PageTransition><TentaliDemo listings={listings} offers={offers} user={profile || user} onClaim={claimLoad} onRequireAuth={requireAuth} /></PageTransition>} />
                 <Route path="/yasal/:slug" element={<PageTransition><LegalPage /></PageTransition>} />
                 <Route path="*" element={<PageTransition><NotFoundPage /></PageTransition>} />
               </Routes>

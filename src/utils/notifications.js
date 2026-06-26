@@ -22,20 +22,28 @@ export function buildNotifications(user, { listings = [], offers = [], messages 
     // İlan sahibine: gelen teklif veya yük kapma (claim)
     if (myListingIds.has(String(o.listingId)) && String(o.fromUserId) !== uid) {
       const claim = o.kind === "claim";
+      const autoOk = claim && o.autoApproved;
       items.push({
         id: `off-${o.id}`, icon: claim ? "🚚" : "📨",
-        text: claim
-          ? `${o.fromUser}, "${titleOf(o.listingId)}" yükünü kaptı — onayını bekliyor`
-          : `${o.fromUser}, "${titleOf(o.listingId)}" ilanınıza ${o.price ? `₺${o.price.toLocaleString("tr-TR")} ` : ""}teklif verdi`,
-        time: o.createdAt, link: "/ilanlarim",
+        text: autoOk
+          ? `${o.fromUser} (doğrulanmış) "${titleOf(o.listingId)}" yükünü aldı ⚡ — iş başladı`
+          : claim
+            ? `${o.fromUser}, "${titleOf(o.listingId)}" yükünü kaptı — onayını bekliyor`
+            : `${o.fromUser}, "${titleOf(o.listingId)}" ilanınıza ${o.price ? `₺${o.price.toLocaleString("tr-TR")} ` : ""}teklif verdi`,
+        time: o.createdAt, link: autoOk ? "/sevkiyat" : "/ilanlarim",
       });
     }
-    // Teklifi verene: sonuç (kabul/ret)
+    // Teklifi/yükü alana: sonuç (kabul/ret)
     if (String(o.fromUserId) === uid && o.status !== "beklemede") {
+      const claim = o.kind === "claim";
+      const ok = o.status === "kabul";
       items.push({
-        id: `res-${o.id}`, icon: o.status === "kabul" ? "✅" : "❌",
-        text: `"${titleOf(o.listingId)}" için teklifin ${o.status === "kabul" ? "kabul edildi 🎉" : "reddedildi"}`,
-        time: o.updatedAt || o.createdAt, link: o.status === "kabul" ? "/mesajlar" : `/ilan/${o.listingId}`,
+        id: `res-${o.id}`, icon: ok ? "✅" : "❌",
+        text: claim
+          ? `"${titleOf(o.listingId)}" yükü ${ok ? "onaylandı 🎉 — sevkiyata git" : "onaylanmadı"}`
+          : `"${titleOf(o.listingId)}" için teklifin ${ok ? "kabul edildi 🎉" : "reddedildi"}`,
+        time: o.updatedAt || o.createdAt,
+        link: ok ? (claim ? "/sevkiyat" : "/mesajlar") : `/ilan/${o.listingId}`,
       });
     }
   }

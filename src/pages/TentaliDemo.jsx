@@ -13,7 +13,6 @@ import { MapContainer, TileLayer, Marker, Polyline, useMap } from "react-leaflet
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { IL_COORDS } from "../data/ilCoords";
-import { newId, nowIso } from "../utils/id";
 import { useToast } from "../components/Toast";
 import { hapticSuccess } from "../native/haptics";
 
@@ -42,6 +41,13 @@ const VEHICLE_FILTERS = [
   { key: "hafriyat", label: "Damperli (hafriyat)" },
   { key: "silobas", label: "Silobas (döküme)" },
 ];
+
+// Geçerli [lat, lng] çifti mi? (Türkiye sınırları içinde kaba kontrol)
+function isLatLng(p) {
+  return Array.isArray(p) && p.length === 2 &&
+    Number.isFinite(p[0]) && Number.isFinite(p[1]) &&
+    p[0] >= 35 && p[0] <= 43 && p[1] >= 25 && p[1] <= 45;
+}
 
 // ── Coğrafya yardımcıları (PostGIS'in JS karşılığı — demo/MVP için yeterli) ──
 const R = 6371; // km
@@ -108,7 +114,7 @@ function Field({ label, children }) {
 }
 const selStyle = { fontFamily: MONO, fontSize: 12, fontWeight: 700, color: C.ink, padding: "7px 8px", background: C.card, border: `2px solid ${C.ink}`, borderRadius: 5, width: "100%", appearance: "none", cursor: "pointer" };
 
-export default function TentaliDemo({ listings = [], offers = [], user, onAddOffer, onRequireAuth }) {
+export default function TentaliDemo({ listings = [], offers = [], user, onClaim, onRequireAuth }) {
   const navigate = useNavigate();
   const toast = useToast();
 
@@ -121,20 +127,28 @@ export default function TentaliDemo({ listings = [], offers = [], user, onAddOff
   const myPos = coordOf(myCity);
   const targetPos = coordOf(targetCity);
 
-  // Bu kullanıcının zaten kaptığı (claim) ilan id'leri — tekrar kapamayı engelle.
-  const myClaimIds = useMemo(() => {
-    if (!user) return new Set();
-    return new Set(offers.filter((o) => String(o.fromUserId) === String(user.id)).map((o) => String(o.listingId)));
+  // Bu kullanıcının ilan başına claim durumu (listingId -> "beklemede"|"kabul"|"ret").
+  // Tekrar kapamayı engellemek ve "onay bekleniyor" rozetini göstermek için.
+  const myClaimStatus = useMemo(() => {
+    const m = new Map();
+    if (!user) return m;
+    for (const o of offers) {
+      if (String(o.fromUserId) === String(user.id)) m.set(String(o.listingId), o.status);
+    }
+    return m;
   }, [offers, user]);
 
   // ── Kapılabilir iş ilanları: type "is", aktif, koordinatı çözülebilen ──
+  // Kalkış/varış için ÖNCE ilanın gerçek pin'i (pickup/dropoff [lat,lng]),
+  // yoksa il merkezi fallback. Böylece kullanıcı ilanları gerçek koridor verir.
   const claimable = useMemo(() => {
     return listings
       .filter((l) => l.type === "is" && l.status === "aktif")
       .map((l) => {
-        const o = coordOf(l.il);
-        const d = coordOf(l.varisIl || l.bosaltma) || o; // varış ili yoksa origin (yön nötr)
-        return { ...l, _o: o, _d: d };
+        const o = isLatLng(l.pickup) ? l.pickup : coordOf(l.il);
+        const d = isLatLng(l.dropoff) ? l.dropoff : (coordOf(l.varisIl || l.bosaltma) || o);
+        const precise = isLatLng(l.pickup); // gerçek pin mi, il merkezi mi
+        return { ...l, _o: o, _d: d, _precise: precise };
       })
       .filter((l) => l._o);
   }, [listings]);
@@ -155,18 +169,15 @@ export default function TentaliDemo({ listings = [], offers = [], user, onAddOff
   const visible = matched.filter((l) => l.pass);
   const sel = selected ? matched.find((l) => String(l.id) === String(selected)) : null;
 
-  // ── "Yükü Al": claim kaydı oluştur (yük verene onaya gider) ──
-  const claimLoad = (l) => {
+  // ── "Yükü Al": claim oluştur. Otomatik onay kararı App.jsx'te (güvenilirlik). ──
+  const claimLoad = async (l) => {
     if (!user) { onRequireAuth?.(); return; }
-    if (myClaimIds.has(String(l.id))) { toast("Bu yükü zaten aldın, onay bekleniyor.", "info"); return; }
-    onAddOffer?.({
-      id: newId(), listingId: l.id, fromUser: user.name, fromUserId: user.id,
-      price: l.priceType === "sabit" ? l.price : null,
-      message: l.priceType === "sabit" ? "Yükü aldım (sabit fiyat)." : "Yükü almak istiyorum.",
-      kind: "claim", status: "beklemede", createdAt: nowIso(),
-    });
+    if (myClaimStatus.has(String(l.id))) { toast("Bu yükü zaten aldın, onay bekleniyor.", "info"); return; }
+    const res = await onClaim?.(l);
+    if (!res?.ok) { toast("Yük alınamadı.", "error"); return; }
     hapticSuccess();
-    toast("Yük alındı — yük verenin onayı bekleniyor.", "success");
+    if (res.autoApproved) toast("Yük onaylandı! ⚡ (doğrulanmış kamyoncu) — sevkiyata git.", "success");
+    else toast("Yük alındı — yük verenin onayı bekleniyor.", "success");
   };
 
   const cityOptions = IL_KEYS;
@@ -232,7 +243,7 @@ export default function TentaliDemo({ listings = [], offers = [], user, onAddOff
 
       {/* ── Detay kartı / liste ── */}
       {sel ? (
-        <LoadDetail load={sel} claimed={myClaimIds.has(String(sel.id))} onClose={() => setSelected(null)} onClaim={() => claimLoad(sel)} onDetail={() => navigate(`/ilan/${sel.id}`)} />
+        <LoadDetail load={sel} claimStatus={myClaimStatus.get(String(sel.id))} onClose={() => setSelected(null)} onClaim={() => claimLoad(sel)} onDetail={() => navigate(`/ilan/${sel.id}`)} onGoDispatch={() => navigate("/sevkiyat")} />
       ) : (
         <div style={{ padding: "12px 14px 96px" }}>
           {visible.length === 0 ? (
@@ -243,7 +254,7 @@ export default function TentaliDemo({ listings = [], offers = [], user, onAddOff
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {visible.map((l) => {
                 const fixed = l.priceType === "sabit";
-                const claimed = myClaimIds.has(String(l.id));
+                const claimed = myClaimStatus.has(String(l.id));
                 return (
                   <button key={l.id} type="button" onClick={() => setSelected(l.id)} style={{ textAlign: "left", display: "flex", background: C.card, border: `2px solid ${C.ink}`, borderRadius: 6, overflow: "hidden", boxShadow: "3px 3px 0 rgba(10,10,10,.12)", cursor: "pointer" }}>
                     <span style={{ width: 6, flexShrink: 0, background: fixed ? C.yellow : C.ink }} />
@@ -271,9 +282,11 @@ export default function TentaliDemo({ listings = [], offers = [], user, onAddOff
 }
 
 // ── Yük detayı + "Yükü Al" ──
-function LoadDetail({ load, claimed, onClose, onClaim, onDetail }) {
+function LoadDetail({ load, claimStatus, onClose, onClaim, onDetail, onGoDispatch }) {
   const fixed = load.priceType === "sabit";
   const km = load._d && load._d !== load._o ? Math.round(distanceKm(load._o, load._d)) : null;
+  const claimed = Boolean(claimStatus);            // herhangi bir claim var
+  const approved = claimStatus === "kabul";        // yük veren onayladı
   return (
     <div style={{ padding: "12px 14px 96px" }}>
       <div style={{ background: C.card, border: `2px solid ${C.ink}`, borderRadius: 8, overflow: "hidden", boxShadow: "4px 4px 0 rgba(10,10,10,.18)" }}>
@@ -293,8 +306,9 @@ function LoadDetail({ load, claimed, onClose, onClaim, onDetail }) {
             </span>
             <span>{load.varisIl || load.bosaltma || load.il}</span>
           </div>
-          <div style={{ fontFamily: MONO, fontSize: 10, fontWeight: 700, color: C.muted, marginTop: 4 }}>
-            {km ? `~${km} KM GÜZERGAH · ` : ""}BANA {Math.round(load.originDist)} KM
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 4, fontFamily: MONO, fontSize: 10, fontWeight: 700, color: C.muted }}>
+            <span>{km ? `~${km} KM GÜZERGAH · ` : ""}BANA {Math.round(load.originDist)} KM</span>
+            {load._precise && <span style={{ color: C.green }}>● GERÇEK PİN</span>}
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 12 }}>
@@ -318,14 +332,24 @@ function LoadDetail({ load, claimed, onClose, onClaim, onDetail }) {
               <div style={{ fontFamily: MONO, fontSize: 8.5, fontWeight: 700, color: C.muted }}>{fixed ? "SABİT FİYAT" : "FİYAT"}</div>
               <div style={{ fontFamily: HEAD, fontSize: 22, fontWeight: 900, color: fixed ? C.green : C.ink }}>{fixed && load.price ? `₺${load.price.toLocaleString("tr-TR")}` : "Teklife açık"}</div>
             </div>
-            <button type="button" disabled={claimed} onClick={onClaim} style={{ marginLeft: "auto", fontFamily: HEAD, textTransform: "uppercase", letterSpacing: ".02em", fontSize: 15, fontWeight: 900, padding: "12px 22px", borderRadius: 6, cursor: claimed ? "default" : "pointer", background: claimed ? C.green : C.yellow, color: claimed ? "#fff" : C.ink, border: `2px solid ${C.ink}`, boxShadow: claimed ? "none" : "3px 3px 0 rgba(10,10,10,.25)", transition: "all .12s" }}>
-              {claimed ? "✓ Yük Alındı" : fixed ? "Yükü Al" : "Teklif Ver"}
-            </button>
+            {approved ? (
+              <button type="button" onClick={onGoDispatch} style={{ marginLeft: "auto", fontFamily: HEAD, textTransform: "uppercase", letterSpacing: ".02em", fontSize: 15, fontWeight: 900, padding: "12px 22px", borderRadius: 6, cursor: "pointer", background: C.green, color: "#fff", border: `2px solid ${C.ink}`, boxShadow: "3px 3px 0 rgba(10,10,10,.25)" }}>
+                Sevkiyata Git →
+              </button>
+            ) : (
+              <button type="button" disabled={claimed} onClick={onClaim} style={{ marginLeft: "auto", fontFamily: HEAD, textTransform: "uppercase", letterSpacing: ".02em", fontSize: 15, fontWeight: 900, padding: "12px 22px", borderRadius: 6, cursor: claimed ? "default" : "pointer", background: claimed ? C.ink : C.yellow, color: claimed ? C.yellow : C.ink, border: `2px solid ${C.ink}`, boxShadow: claimed ? "none" : "3px 3px 0 rgba(10,10,10,.25)", transition: "all .12s" }}>
+                {claimed ? "Onay Bekleniyor" : fixed ? "Yükü Al" : "Teklif Ver"}
+              </button>
+            )}
           </div>
 
-          {claimed ? (
+          {approved ? (
+            <div style={{ marginTop: 12, padding: "10px 12px", background: C.green, border: `2px solid ${C.ink}`, borderRadius: 6, fontFamily: MONO, fontSize: 11, color: "#fff", lineHeight: 1.55 }}>
+              <strong>✓ Yük verenin onayı geldi!</strong> İşin sevkiyat sekmesinde aktif. Yola çık, durumu oradan güncelle.
+            </div>
+          ) : claimed ? (
             <div style={{ marginTop: 12, padding: "10px 12px", background: C.stone, border: `2px solid ${C.border}`, borderRadius: 6, fontFamily: MONO, fontSize: 11, color: C.sub, lineHeight: 1.55 }}>
-              Yük verene bildirim gitti. <strong style={{ color: C.ink }}>Onay bekleniyor…</strong> Onaylanınca sevkiyat sekmesinde aktif işin açılır.
+              Yük verene bildirim gitti. <strong style={{ color: C.ink }}>Onay bekleniyor…</strong> Onaylanınca burada ve bildirimlerde haber alırsın.
             </div>
           ) : (
             <button type="button" onClick={onDetail} style={{ marginTop: 12, width: "100%", background: "none", border: `2px solid ${C.border}`, borderRadius: 6, padding: "9px", fontFamily: MONO, fontSize: 11, fontWeight: 700, color: C.sub, cursor: "pointer" }}>
