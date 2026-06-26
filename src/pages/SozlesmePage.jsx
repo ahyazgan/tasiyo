@@ -17,7 +17,7 @@ import { fmtTL } from "../utils/payments";
 const C = {
   ink: "#0A0A0A",
   header: "#EAE3D6",
-  yellow: "#FACC15",
+  yellow: "#F2C200",
   green: "#16803C",
   bg: "#F1EDE5",
   card: "#FFFFFF",

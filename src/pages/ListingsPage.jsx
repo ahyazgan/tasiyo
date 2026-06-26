@@ -38,7 +38,7 @@ const ListingsMap = lazy(() => import("../components/ListingsMap"));
 const C = {
   ink: "#0A0A0A",
   header: "#EAE3D6",
-  yellow: "#FACC15",
+  yellow: "#F2C200",
   yellowDeep: "#8A6D00",
   green: "#16803C",
   red: "#DC2626",
@@ -119,7 +119,7 @@ function ListingCard({ l, history, config, isFav = false, onToggleFav, rel }) {
         border: `2px solid ${l.featured ? C.yellow : C.ink}`,
         borderRadius: 6,
         overflow: "hidden",
-        boxShadow: l.featured ? "3px 3px 0 #FACC15" : "none",
+        boxShadow: l.featured ? "3px 3px 0 #F2C200" : "none",
       }}
     >
       {l.featured && (
@@ -602,7 +602,7 @@ export default function ListingsPage({ listings = LISTINGS, onRefresh, blockedId
       {/* Aşağı-çekip-yenile göstergesi */}
       {(distance > 0 || refreshing) && (
         <div style={{ position: "fixed", top: 0, left: "50%", transform: `translateX(-50%) translateY(${Math.max(0, distance - 34)}px)`, zIndex: 55, width: 34, height: 34, borderRadius: "50%", background: "#0A0A0A", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "2px 2px 0 rgba(10,10,10,0.2)", pointerEvents: "none" }}>
-          <RotateCw size={18} strokeWidth={2.6} color="#FACC15" style={{ transform: `rotate(${refreshing ? 0 : pull * 270}deg)`, animation: refreshing ? "ptr-spin 0.7s linear infinite" : "none" }} />
+          <RotateCw size={18} strokeWidth={2.6} color="#F2C200" style={{ transform: `rotate(${refreshing ? 0 : pull * 270}deg)`, animation: refreshing ? "ptr-spin 0.7s linear infinite" : "none" }} />
         </div>
       )}
 

@@ -2,7 +2,7 @@
 
 const C = {
   ink: "#0A0A0A",
-  yellow: "#FACC15",
+  yellow: "#F2C200",
   bg: "#F1EDE5",
   card: "#FFFFFF",
   fill: "#E3DDD0",
@@ -11,7 +11,7 @@ const C = {
 };
 
 // Hazard stripe (yellow/ink diagonal).
-const HAZARD = "repeating-linear-gradient(45deg,#0A0A0A 0 9px,#FACC15 9px 18px)";
+const HAZARD = "repeating-linear-gradient(45deg,#0A0A0A 0 9px,#F2C200 9px 18px)";
 
 // Single shimmering bar with a 2px ink frame and manila fill.
 function Bar({ width = "100%", height = 12, frame = false, radius = 5 }) {

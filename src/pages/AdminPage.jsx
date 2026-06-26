@@ -17,7 +17,7 @@ import { PAYMENTS_ENABLED } from "../config/features";
 const C = {
   ink: "#0A0A0A",
   header: "#EAE3D6",
-  yellow: "#FACC15",
+  yellow: "#F2C200",
   green: "#16803C",
   red: "#DC2626",
   bg: "#F1EDE5",
@@ -31,7 +31,7 @@ const MONO = "'Space Mono', ui-monospace, SFMono-Regular, Menlo, monospace";
 const HEAD = "'Archivo', sans-serif";
 const BODY = "'Plus Jakarta Sans', system-ui, sans-serif";
 
-const HAZARD = "repeating-linear-gradient(45deg,#0A0A0A 0 9px,#FACC15 9px 18px)";
+const HAZARD = "repeating-linear-gradient(45deg,#0A0A0A 0 9px,#F2C200 9px 18px)";
 
 const fmt = (iso) => { try { return new Date(iso).toLocaleString("tr-TR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }); } catch { return ""; } };
 
@@ -40,7 +40,7 @@ const shortId = (id) => "HMT-" + String(id ?? "").slice(-4).toUpperCase().padSta
 const TABS = [["reports", "Şikayet"], ["disputes", "İtiraz"], ["listings", "İlan"], ["announce", "Duyuru"], ["users", "Üye"], ["docs", "Belge"], ["pricing", "Finans"], ["audit", "Kayıt"]];
 
 const PAY_BADGE = {
-  bloke: { label: "EMANETTE", bg: "#FACC15", fg: "#0A0A0A" },
+  bloke: { label: "EMANETTE", bg: "#F2C200", fg: "#0A0A0A" },
   serbest: { label: "ÖDENDİ", bg: "#16803C", fg: "#fff" },
   iade: { label: "İADE", bg: "#DC2626", fg: "#fff" },
 };
@@ -143,7 +143,7 @@ export default function AdminPage({ user, reports = [], docs = [], users = [], l
       {/* ── Dark header + hazard ── */}
       <div style={{ position: "relative", background: C.ink, padding: "16px 18px", display: "flex", alignItems: "center", gap: 11, overflow: "hidden" }}>
         <span style={{ position: "absolute", top: 0, right: 0, bottom: 0, width: 14, backgroundImage: HAZARD }} />
-        <span style={{ width: 38, height: 38, borderRadius: 6, background: C.yellow, border: "2px solid #FACC15", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+        <span style={{ width: 38, height: 38, borderRadius: 6, background: C.yellow, border: "2px solid #F2C200", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
           <Shield size={20} color={C.ink} strokeWidth={2.4} />
         </span>
         <h1 style={{ fontFamily: HEAD, fontSize: 18, fontWeight: 800, textTransform: "uppercase", letterSpacing: "-0.02em", color: "#fff", margin: 0, lineHeight: 1 }}>Yönetim Paneli</h1>
@@ -362,7 +362,7 @@ export default function AdminPage({ user, reports = [], docs = [], users = [], l
               {rows.length === 0 ? <Empty icon={FileText} text="İlan bulunamadı." /> : rows.slice(0, 50).map((l) => {
                 const hidden = l.status === "kapali";
                 return (
-                  <div key={l.id} style={{ background: C.card, border: `2px solid ${l.featured ? C.yellow : C.ink}`, borderRadius: 6, padding: 12, boxShadow: l.featured ? "3px 3px 0 #FACC15" : "3px 3px 0 rgba(10,10,10,.10)", opacity: hidden ? 0.6 : 1 }}>
+                  <div key={l.id} style={{ background: C.card, border: `2px solid ${l.featured ? C.yellow : C.ink}`, borderRadius: 6, padding: 12, boxShadow: l.featured ? "3px 3px 0 #F2C200" : "3px 3px 0 rgba(10,10,10,.10)", opacity: hidden ? 0.6 : 1 }}>
                     <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 10 }}>
                       <span style={{ fontFamily: HEAD, fontSize: 13.5, fontWeight: 800, textTransform: "uppercase", color: C.ink, lineHeight: 1.2, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{l.title || ("#" + l.id)}</span>
                       <div style={{ display: "flex", gap: 5, flexShrink: 0 }}>

@@ -29,13 +29,13 @@ export default function UpdateBanner() {
         borderBottom: "2px solid #0A0A0A", fontFamily: "'Space Mono', ui-monospace, monospace",
       }}
     >
-      <Download size={16} strokeWidth={2.4} color="#FACC15" style={{ flexShrink: 0 }} />
+      <Download size={16} strokeWidth={2.4} color="#F2C200" style={{ flexShrink: 0 }} />
       <span style={{ flex: 1, minWidth: 0, fontSize: 11.5, fontWeight: 700, lineHeight: 1.3 }}>
         {info.forced ? "Bu sürüm artık desteklenmiyor — güncelle" : `Yeni sürüm hazır (${info.latest})`}
       </span>
       <button
         onClick={open}
-        style={{ flexShrink: 0, background: "#FACC15", color: "#0A0A0A", border: "2px solid #0A0A0A", borderRadius: 5, padding: "5px 11px", fontFamily: "inherit", fontSize: 10.5, fontWeight: 700, textTransform: "uppercase", cursor: "pointer" }}
+        style={{ flexShrink: 0, background: "#F2C200", color: "#0A0A0A", border: "2px solid #0A0A0A", borderRadius: 5, padding: "5px 11px", fontFamily: "inherit", fontSize: 10.5, fontWeight: 700, textTransform: "uppercase", cursor: "pointer" }}
       >
         Güncelle
       </button>

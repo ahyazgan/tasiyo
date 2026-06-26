@@ -12,7 +12,7 @@ export function useToast() {
 const STYLES = {
   success: { bg: "#16803C", fg: "#FFFFFF", Icon: Check },
   error:   { bg: "#DC2626", fg: "#FFFFFF", Icon: AlertCircle },
-  info:    { bg: "#0A0A0A", fg: "#FFFFFF", Icon: Info, iconColor: "#FACC15" },
+  info:    { bg: "#0A0A0A", fg: "#FFFFFF", Icon: Info, iconColor: "#F2C200" },
 };
 
 export function ToastProvider({ children }) {

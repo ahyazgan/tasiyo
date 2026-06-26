@@ -32,18 +32,18 @@ export const THEMES = {
     dark: true,
   },
 
-  // ── YOL (asfalt / otoyol — yol sarısı) ──
+  // ── YOL (otoyol / lojistik — AÇIK zemin + yol sarısı) ──
   yol: {
     key: "yol", label: "YOL",
-    ink: "#23262B", yellow: "#F2C200", green: "#5FC27E",
-    card: "#2D3138", stone: "#23262B", border: "#3A3F47",
-    sub: "#9AA0A8", muted: "#6B7178", blue: "#F2C200",
-    accent: "#F2C200", accentFg: "#000000", text: "#EDEDE8",
-    pageBg: "#23262B", headerBg: "#23262B",
-    surf2: "#363B43",
+    ink: "#1E2127", yellow: "#F2C200", green: "#1E7E45",
+    card: "#FFFFFF", stone: "#ECEDE9", border: "#D8DAD3",
+    sub: "#5A5E66", muted: "#9AA0A8", blue: "#1E2127",
+    accent: "#F2C200", accentFg: "#1E2127", text: "#1E2127",
+    pageBg: "#ECEDE9", headerBg: "#FFFFFF",
+    surf2: "#F3F4F0",
     mono: "'Space Mono', ui-monospace, monospace",
     head: "'Archivo', 'Oswald', sans-serif",
-    dark: true,
+    dark: false,
   },
 
   // ── AKIŞ (temiz / açık — turuncu) ──

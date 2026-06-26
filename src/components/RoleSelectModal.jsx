@@ -5,10 +5,10 @@ import { useState } from "react";
 // rol seçmeden devam edilmez (platform akışı role bağlı).
 //   onSelect("isveren" | "nakliyeci" | "tedarikci")  ->  Promise
 
-const C = { ink: "#0A0A0A", yellow: "#FACC15", card: "#FFFFFF", sub: "#5A5852", red: "#DC2626" };
+const C = { ink: "#0A0A0A", yellow: "#F2C200", card: "#FFFFFF", sub: "#5A5852", red: "#DC2626" };
 const MONO = "'Space Mono','SFMono-Regular',ui-monospace,monospace";
 const ARCH = "'Archivo',system-ui,sans-serif";
-const HAZARD = "repeating-linear-gradient(45deg,#0A0A0A 0 9px,#FACC15 9px 18px)";
+const HAZARD = "repeating-linear-gradient(45deg,#0A0A0A 0 9px,#F2C200 9px 18px)";
 const FRAME = `2px solid ${C.ink}`;
 
 const ROLES = [

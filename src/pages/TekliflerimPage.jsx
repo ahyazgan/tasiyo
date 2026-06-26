@@ -10,7 +10,7 @@ import Logo from "../components/Logo";
 //    siparişleri durumuna göre (beklemede / onaylandı / reddedildi) izler.
 
 const C = {
-  ink: "#0A0A0A", header: "#EAE3D6", yellow: "#FACC15", green: "#16803C",
+  ink: "#0A0A0A", header: "#EAE3D6", yellow: "#F2C200", green: "#16803C",
   red: "#DC2626", bg: "#F1EDE5", card: "#FFFFFF", stone: "#F4F1EA",
   sub: "#5A5852", muted: "#9A968D",
 };

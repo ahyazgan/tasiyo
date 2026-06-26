@@ -5,7 +5,7 @@ import { Check, ChevronDown } from "lucide-react";
 const REASONS = ["Yanıltıcı / sahte ilan", "Dolandırıcılık şüphesi", "Uygunsuz içerik", "Ödeme / anlaşma sorunu", "İletişim kurulamıyor", "Diğer"];
 
 const INK = "#0A0A0A";
-const YELLOW = "#FACC15";
+const YELLOW = "#F2C200";
 const GREEN = "#16803C";
 const STONE = "#F4F1EA";
 const SUB = "#5A5852";

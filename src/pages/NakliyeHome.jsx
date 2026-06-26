@@ -23,7 +23,7 @@ import { marketPulse } from "../utils/priceEstimate";
 const C = {
   ink: "#0A0A0A",        // siyah / çerçeve / birincil
   header: "#EAE3D6",     // açık manila header (kullanılmıyor — koyu bloklar tercih)
-  yellow: "#FACC15",     // hazard sarısı — aksiyon/aksan
+  yellow: "#F2C200",     // hazard sarısı — aksiyon/aksan
   green: "#16803C",      // eşleşti / onay / para
   red: "#DC2626",        // acil / bildirim
   bg: "#F1EDE5",         // manila gövde zemini
@@ -38,7 +38,7 @@ const MONO = "'Space Mono','SFMono-Regular',ui-monospace,monospace";
 const ARCH = "'Archivo',system-ui,sans-serif";
 
 /* SAHA imza yardımcıları */
-const HAZARD = "repeating-linear-gradient(45deg,#0A0A0A 0 9px,#FACC15 9px 18px)";
+const HAZARD = "repeating-linear-gradient(45deg,#0A0A0A 0 9px,#F2C200 9px 18px)";
 const SHADOW = "6px 6px 0 rgba(10,10,10,.12)";        // büyük kart sert gölge
 const SHADOW_SM = "3px 3px 0 #0A0A0A";                 // küçük öğe sert gölge
 const FRAME = `2px solid ${C.ink}`;

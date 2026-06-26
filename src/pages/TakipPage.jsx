@@ -30,7 +30,7 @@ const SignaturePad = lazy(() => import("../components/SignaturePad"));
 const C = {
   ink: "#0A0A0A",
   header: "#EAE3D6",
-  yellow: "#FACC15",
+  yellow: "#F2C200",
   yellowDeep: "#E0B400",
   green: "#16803C",
   bg: "#F1EDE5",
@@ -46,7 +46,7 @@ const C = {
 const MONO = "'Space Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace";
 const ARCH = "'Archivo', system-ui, sans-serif";
 
-const HAZARD = "repeating-linear-gradient(45deg,#0A0A0A 0 9px,#FACC15 9px 18px)";
+const HAZARD = "repeating-linear-gradient(45deg,#0A0A0A 0 9px,#F2C200 9px 18px)";
 
 const idText = (l) => "HMT-" + String(l.id).padStart(4, "0");
 

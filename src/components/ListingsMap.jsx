@@ -12,7 +12,7 @@ import { IL_COORDS } from "../data/ilCoords";
 // ── SAHA token'ları ──
 const C = {
   ink: "#0A0A0A",
-  yellow: "#FACC15",
+  yellow: "#F2C200",
   green: "#16803C",
   card: "#FFFFFF",
   stone: "#F4F1EA",

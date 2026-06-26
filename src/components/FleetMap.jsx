@@ -6,7 +6,7 @@ import "leaflet/dist/leaflet.css";
 // ── Filo haritası — birden çok aracı canlı gösterir (dispatch/kontrol kulesi).
 // items: [{ id, label, vehicle:{lat,lng,heading}, dropoff:[lat,lng], live }]
 
-const C = { ink: "#0A0A0A", yellow: "#FACC15", muted: "#9A968D", card: "#FFFFFF" };
+const C = { ink: "#0A0A0A", yellow: "#F2C200", muted: "#9A968D", card: "#FFFFFF" };
 
 function truckIcon(label, live) {
   const bg = live ? C.yellow : C.muted;

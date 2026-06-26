@@ -12,7 +12,7 @@ import Logo from "../components/Logo";
 /* ── SAHA paleti (kesin değerler — _DESIGN_SYSTEM.md) ──────────────── */
 const C = {
   ink: "#0A0A0A",
-  yellow: "#FACC15",
+  yellow: "#F2C200",
   green: "#16803C",
   bg: "#F1EDE5",
   card: "#FFFFFF",
@@ -23,7 +23,7 @@ const C = {
 };
 const MONO = "'Space Mono','SFMono-Regular',ui-monospace,monospace";
 const ARCH = "'Archivo',system-ui,sans-serif";
-const HAZARD = "repeating-linear-gradient(45deg,#0A0A0A 0 9px,#FACC15 9px 18px)";
+const HAZARD = "repeating-linear-gradient(45deg,#0A0A0A 0 9px,#F2C200 9px 18px)";
 const SHADOW = "6px 6px 0 rgba(10,10,10,.12)";
 const SHADOW_SM = "3px 3px 0 #0A0A0A";
 const FRAME = `2px solid ${C.ink}`;

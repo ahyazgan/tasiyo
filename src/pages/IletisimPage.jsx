@@ -10,7 +10,7 @@ import SEO from "../components/SEO";
 const C = {
   ink: "#0A0A0A",
   header: "#EAE3D6",
-  yellow: "#FACC15",
+  yellow: "#F2C200",
   green: "#16803C",
   red: "#DC2626",
   bg: "#F1EDE5",

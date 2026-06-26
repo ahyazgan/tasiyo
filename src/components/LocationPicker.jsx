@@ -31,7 +31,7 @@ export default function LocationPicker({ pickup, dropoff, onChange }) {
             <Tooltip>Boşaltma</Tooltip>
           </CircleMarker>
         )}
-        {pickup && dropoff && <Polyline positions={[pickup, dropoff]} pathOptions={{ color: "#FACC15", weight: 3, dashArray: "6 6" }} />}
+        {pickup && dropoff && <Polyline positions={[pickup, dropoff]} pathOptions={{ color: "#F2C200", weight: 3, dashArray: "6 6" }} />}
       </MapContainer>
     </div>
   );

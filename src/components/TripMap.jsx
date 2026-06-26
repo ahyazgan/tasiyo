@@ -6,7 +6,7 @@ import "leaflet/dist/leaflet.css";
 // ── Canlı sefer haritası — yükleme/boşaltma + araç (canlı) + iz.
 // pickup/dropoff: [lat,lng] · vehicle: {lat,lng,heading} · trail: [{lat,lng}]
 
-const C = { ink: "#0A0A0A", yellow: "#FACC15", green: "#16803C", card: "#FFFFFF" };
+const C = { ink: "#0A0A0A", yellow: "#F2C200", green: "#16803C", card: "#FFFFFF" };
 const MONO = "'Space Mono', ui-monospace, monospace";
 
 function pinIcon(label, bg, fg) {

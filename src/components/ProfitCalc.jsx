@@ -6,7 +6,7 @@ import { tripProfit, vehicleConsumption, DEFAULT_FUEL_PRICE } from "../utils/pro
 // basePrice: işin fiyatı/tahmini · km: tek yön mesafe · vehicle: tüketim için.
 
 const C = {
-  ink: "#0A0A0A", yellow: "#FACC15", green: "#16803C", red: "#DC2626",
+  ink: "#0A0A0A", yellow: "#F2C200", green: "#16803C", red: "#DC2626",
   card: "#FFFFFF", stone: "#F4F1EA", border: "#E3DDD0", sub: "#5A5852", muted: "#9A968D",
 };
 const MONO = "'Space Mono', ui-monospace, monospace";

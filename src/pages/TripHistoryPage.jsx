@@ -8,7 +8,7 @@ import SEO from "../components/SEO";
 // Biriken sefer/teslim verisini görünür değere çevirir (veri moat'ı).
 
 const C = {
-  ink: "#0A0A0A", header: "#EAE3D6", yellow: "#FACC15", green: "#16803C",
+  ink: "#0A0A0A", header: "#EAE3D6", yellow: "#F2C200", green: "#16803C",
   bg: "#F1EDE5", card: "#FFFFFF", stone: "#F4F1EA", border: "#E3DDD0",
   sub: "#5A5852", muted: "#9A968D",
 };

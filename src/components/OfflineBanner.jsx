@@ -48,7 +48,7 @@ export default function OfflineBanner({ onReconnect }) {
         gap: 8,
         padding: "max(8px, env(safe-area-inset-top)) 14px 8px",
         background: offline ? "#0A0A0A" : "#16803C",
-        color: offline ? "#FACC15" : "#FFFFFF",
+        color: offline ? "#F2C200" : "#FFFFFF",
         fontFamily: "'Space Mono', ui-monospace, monospace",
         fontSize: 12,
         fontWeight: 700,

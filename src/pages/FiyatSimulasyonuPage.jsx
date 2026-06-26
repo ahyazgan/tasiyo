@@ -12,14 +12,14 @@ import { loadListings, loadOffers, loadPricingConfig } from "../utils/storage";
 import SEO from "../components/SEO";
 
 const C = {
-  ink: "#0A0A0A", header: "#EAE3D6", yellow: "#FACC15", yellowDeep: "#8A6D00",
+  ink: "#0A0A0A", header: "#EAE3D6", yellow: "#F2C200", yellowDeep: "#8A6D00",
   green: "#16803C", red: "#DC2626", bg: "#F1EDE5", card: "#FFFFFF", stone: "#F4F1EA",
   border: "#E3DDD0", line: "#F0ECE3", sub: "#5A5852", muted: "#9A968D",
 };
 const MONO = "'Space Mono', ui-monospace, monospace";
 const SANS = "'Plus Jakarta Sans', system-ui, sans-serif";
 const ARCH = "'Archivo', sans-serif";
-const HAZARD = "repeating-linear-gradient(45deg,#0A0A0A 0 9px,#FACC15 9px 18px)";
+const HAZARD = "repeating-linear-gradient(45deg,#0A0A0A 0 9px,#F2C200 9px 18px)";
 
 const shell = { margin: "0 auto", width: "100%", maxWidth: 460, minHeight: "100vh", background: C.bg, color: C.ink, fontFamily: SANS, paddingBottom: 96 };
 const microLabel = { display: "block", fontFamily: MONO, fontSize: 9.5, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: C.sub, marginBottom: 6 };

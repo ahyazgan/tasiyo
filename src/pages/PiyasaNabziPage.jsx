@@ -14,14 +14,14 @@ import Logo from "../components/Logo";
 
 // ── SAHA tokens ──
 const C = {
-  ink: "#0A0A0A", header: "#EAE3D6", yellow: "#FACC15", yellowDeep: "#8A6D00",
+  ink: "#0A0A0A", header: "#EAE3D6", yellow: "#F2C200", yellowDeep: "#8A6D00",
   green: "#16803C", red: "#DC2626", bg: "#F1EDE5", card: "#FFFFFF", stone: "#F4F1EA",
   border: "#E3DDD0", line: "#F0ECE3", sub: "#5A5852", muted: "#9A968D", faint: "#A8A39A",
 };
 const MONO = "'Space Mono', ui-monospace, monospace";
 const SANS = "'Plus Jakarta Sans', system-ui, sans-serif";
 const ARCH = "'Archivo', sans-serif";
-const HAZARD = "repeating-linear-gradient(45deg,#0A0A0A 0 9px,#FACC15 9px 18px)";
+const HAZARD = "repeating-linear-gradient(45deg,#0A0A0A 0 9px,#F2C200 9px 18px)";
 
 const shell = {
   margin: "0 auto", width: "100%", maxWidth: 460, minHeight: "100vh",

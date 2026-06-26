@@ -5,8 +5,8 @@ import { hapticTap } from "../native/haptics";
 // ── Alt tab bar — YOL marka dili (asfalt koyu + yol sarısı). Mobil kolon (max-w-[460px]).
 // Ana sekme = harita (Uber tarzı Yük Radarı). Aktif sekmede üstte sarı çizgi.
 
-// YOL teması renkleri (brandThemes.js "yol" ile uyumlu)
-const T = { bg: "#23262B", line: "#3A3F47", yellow: "#F2C200", text: "#EDEDE8", sub: "#9AA0A8" };
+// YOL teması renkleri (açık) — brandThemes.js "yol" ile uyumlu
+const T = { bg: "#FFFFFF", line: "#D8DAD3", yellow: "#F2C200", text: "#1E2127", sub: "#9AA0A8" };
 
 const TABS = [
   { to: "/", label: "Ana", Icon: Map, match: (p) => p === "/" },
@@ -85,7 +85,7 @@ export default function MobileTabBar({ unreadCount = 0 }) {
               />
             )}
             <span className="relative flex items-center justify-center">
-              <Icon width={20} height={20} stroke={active ? T.yellow : T.sub} strokeWidth={2} />
+              <Icon width={20} height={20} stroke={active ? T.text : T.sub} strokeWidth={2} />
               {badge > 0 && (
                 <span
                   className="absolute flex min-w-[16px] items-center justify-center rounded-full px-1"

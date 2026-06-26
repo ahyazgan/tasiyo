@@ -69,7 +69,7 @@ export default function InstallPrompt() {
             background: "#0A0A0A",
             border: "2px solid #0A0A0A",
             borderRadius: 6,
-            color: "#FACC15",
+            color: "#F2C200",
             fontFamily: "'Archivo',sans-serif",
             fontWeight: 900,
             fontSize: 22,
@@ -115,7 +115,7 @@ export default function InstallPrompt() {
             onClick={install}
             className="h-9 px-4"
             style={{
-              background: "#FACC15",
+              background: "#F2C200",
               border: "2px solid #0A0A0A",
               borderRadius: 6,
               color: "#0A0A0A",

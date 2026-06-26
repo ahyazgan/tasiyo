@@ -13,7 +13,7 @@ import { splitAmount, DEFAULT_FEE_RATE } from "../utils/payments";
 const C = {
   ink: "#0A0A0A",
   header: "#EAE3D6",
-  yellow: "#FACC15",
+  yellow: "#F2C200",
   green: "#16A34A",
   greenDeep: "#16803C",
   red: "#DC2626",
@@ -31,7 +31,7 @@ const MONO = "'Space Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monos
 const BODY = "'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif";
 
 // Hazard stripe (vertical, on dark cards / icons)
-const HAZARD = "repeating-linear-gradient(45deg,#0A0A0A 0 9px,#FACC15 9px 18px)";
+const HAZARD = "repeating-linear-gradient(45deg,#0A0A0A 0 9px,#F2C200 9px 18px)";
 
 // ── Money helpers (UNCHANGED behaviour) ──────────────────────────────
 const fmt = (n) => "₺" + Math.round(n || 0).toLocaleString("tr-TR");
