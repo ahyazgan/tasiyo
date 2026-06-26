@@ -62,6 +62,7 @@ const DispatchPage = lazy(() => import("./pages/DispatchPage"));
 const TripHistoryPage = lazy(() => import("./pages/TripHistoryPage"));
 const FiyatSimulasyonuPage = lazy(() => import("./pages/FiyatSimulasyonuPage"));
 const AracRadariPage = lazy(() => import("./pages/AracRadariPage"));
+const UberHome = lazy(() => import("./pages/UberHome"));
 // Genel & Tenteli Nakliye — kamyoncu harita demosu (Slice 3 prototip, bağımsız)
 const TentaliDemo = lazy(() => import("./pages/TentaliDemo"));
 // Marka dili önizleme — 3 yön karşılaştırma (geçici, seçim için)
@@ -494,8 +495,8 @@ function AppShell() {
           <Suspense fallback={<PageLoader />}>
             <AnimatePresence mode="wait">
               <Routes location={location} key={location.pathname}>
-                {/* Ana sayfa = Uber tarzı Yük Radarı, YOL marka dili (açılışta direkt harita) */}
-                <Route path="/" element={<PageTransition><TentaliDemo theme="yol" listings={listings} offers={offers} reviews={reviews} user={profile || user} onClaim={claimLoad} onRequireAuth={requireAuth} /></PageTransition>} />
+                {/* Ana sayfa = tek Uber akışı: Yük Bul ↔ Yük Ver mod anahtarı */}
+                <Route path="/" element={<PageTransition><UberHome listings={listings} offers={offers} reviews={reviews} user={profile || user} onClaim={claimLoad} onRequireAuth={requireAuth} /></PageTransition>} />
                 <Route path="/anasayfa-eski" element={<PageTransition><NakliyeHome listings={listings} user={user} offers={offers} pendingOffersCount={pendingOffersCount} unreadCount={unreadCount} notifUnread={notif.unread} onLoginClick={requireAuth} announcement={announcement} /></PageTransition>} />
                 <Route path="/bildirimler" element={<PageTransition><BildirimlerPage user={user} items={notif.items} onSeen={markNotifSeen} onRequireAuth={requireAuth} /></PageTransition>} />
                 <Route path="/sevkiyat" element={<PageTransition><DispatchPage user={user} listings={listings} offers={offers} onRequireAuth={requireAuth} /></PageTransition>} />
