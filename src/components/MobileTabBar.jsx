@@ -1,14 +1,16 @@
 import { Link, useLocation } from "react-router-dom";
-import { Home, Map, Plus, MessageCircle, User } from "lucide-react";
+import { Map, List, Plus, MessageCircle, User } from "lucide-react";
 import { hapticTap } from "../native/haptics";
 
-// ── SAHA alt tab bar (Tailwind + inline style). Mobil app kolonuna hizalı (max-w-[460px]).
-// Beyaz zemin, üstte 2px siyah çizgi. Aktif sekmede üstte 18x3px sarı çizgi.
-// Ortada büyük sarı "+" butonu (48px, 2px ink çerçeve, radius 8px). Emoji DEĞİL — lucide stroke ikonlar.
+// ── Alt tab bar — YOL marka dili (asfalt koyu + yol sarısı). Mobil kolon (max-w-[460px]).
+// Ana sekme = harita (Uber tarzı Yük Radarı). Aktif sekmede üstte sarı çizgi.
+
+// YOL teması renkleri (brandThemes.js "yol" ile uyumlu)
+const T = { bg: "#23262B", line: "#3A3F47", yellow: "#F2C200", text: "#EDEDE8", sub: "#9AA0A8" };
 
 const TABS = [
-  { to: "/", label: "Ana", Icon: Home, match: (p) => p === "/" },
-  { to: "/yuk-radari", label: "Yük Radarı", Icon: Map, match: (p) => p.startsWith("/yuk-radari") || p.startsWith("/ilanlar") || p.startsWith("/ilan/") },
+  { to: "/", label: "Ana", Icon: Map, match: (p) => p === "/" },
+  { to: "/ilanlar", label: "İlanlar", Icon: List, match: (p) => p.startsWith("/ilanlar") || p.startsWith("/ilan/") || p.startsWith("/yuk-radari") },
   { to: "/ilan-ver", label: "İlan Ver", Icon: Plus, center: true, match: (p) => p.startsWith("/ilan-ver") },
   { to: "/mesajlar", label: "Mesajlar", Icon: MessageCircle, match: (p) => p.startsWith("/mesajlar") },
   { to: "/profil", label: "Profil", Icon: User, match: (p) => p.startsWith("/profil") || p.startsWith("/ilanlarim") || p.startsWith("/panel") },
@@ -29,7 +31,7 @@ export default function MobileTabBar({ unreadCount = 0 }) {
     <nav
       aria-label="Alt gezinme"
       className="fixed inset-x-0 bottom-0 z-50 mx-auto flex w-full max-w-[460px] items-end justify-around px-2 pb-[max(8px,env(safe-area-inset-bottom))] pt-2.5"
-      style={{ background: "#FFFFFF", borderTop: "2px solid #0A0A0A" }}
+      style={{ background: T.bg, borderTop: `2px solid ${T.line}` }}
     >
       {TABS.map((tab) => {
         const active = tab.match(pathname);
@@ -44,14 +46,14 @@ export default function MobileTabBar({ unreadCount = 0 }) {
                   width: 48,
                   height: 48,
                   marginTop: -22,
-                  background: "#FACC15",
-                  border: "2px solid #0A0A0A",
+                  background: T.yellow,
+                  border: `2px solid ${T.bg}`,
                   borderRadius: 8,
                 }}
               >
-                <Plus width={26} height={26} stroke="#0A0A0A" strokeWidth={2.6} />
+                <Plus width={26} height={26} stroke="#000000" strokeWidth={2.6} />
               </span>
-              <span className="mt-1" style={{ ...LABEL_STYLE, color: "#0A0A0A" }}>{tab.label}</span>
+              <span className="mt-1" style={{ ...LABEL_STYLE, color: T.text }}>{tab.label}</span>
             </Link>
           );
         }
@@ -78,12 +80,12 @@ export default function MobileTabBar({ unreadCount = 0 }) {
                   transform: "translateX(-50%)",
                   width: 18,
                   height: 3,
-                  background: "#FACC15",
+                  background: T.yellow,
                 }}
               />
             )}
             <span className="relative flex items-center justify-center">
-              <Icon width={20} height={20} stroke={active ? "#0A0A0A" : "#9A968D"} strokeWidth={2} />
+              <Icon width={20} height={20} stroke={active ? T.yellow : T.sub} strokeWidth={2} />
               {badge > 0 && (
                 <span
                   className="absolute flex min-w-[16px] items-center justify-center rounded-full px-1"
@@ -95,14 +97,14 @@ export default function MobileTabBar({ unreadCount = 0 }) {
                     fontFamily: "'Space Mono', monospace",
                     fontSize: "9px",
                     fontWeight: 700,
-                    boxShadow: "0 0 0 2px #FFFFFF",
+                    boxShadow: `0 0 0 2px ${T.bg}`,
                   }}
                 >
                   {badge > 9 ? "9+" : badge}
                 </span>
               )}
             </span>
-            <span style={{ ...LABEL_STYLE, color: active ? "#0A0A0A" : "#9A968D" }}>{tab.label}</span>
+            <span style={{ ...LABEL_STYLE, color: active ? T.text : T.sub }}>{tab.label}</span>
           </Link>
         );
       })}
