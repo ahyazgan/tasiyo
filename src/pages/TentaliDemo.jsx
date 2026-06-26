@@ -18,15 +18,10 @@ import "leaflet/dist/leaflet.css";
 import { IL_COORDS } from "../data/ilCoords";
 import { useToast } from "../components/Toast";
 import { hapticSuccess } from "../native/haptics";
+import { getTheme, tileUrl } from "../data/brandThemes";
 
-// ── SAHA token'ları ──
-const C = {
-  ink: "#0A0A0A", yellow: "#FACC15", green: "#16803C",
-  card: "#FFFFFF", stone: "#F4F1EA", border: "#E3DDD0",
-  sub: "#5A5852", muted: "#9A968D", blue: "#1D5FA8",
-};
-const MONO = "'Space Mono', ui-monospace, monospace";
-const HEAD = "'Archivo', sans-serif";
+// Renkler/fontlar artık bileşen içinde `theme` prop'undan gelir (getTheme).
+// Modül-seviyesi yardımcılar (loadIcon/Field/LoadDetail) bunları parametre alır.
 
 // TR karakter duyarsız il eşleştirme (listing.il "İstanbul" vs IL_COORDS anahtarı).
 const TR = { "İ": "i", "I": "i", "ı": "i", "Ş": "s", "ş": "s", "Ğ": "g", "ğ": "g", "Ç": "c", "ç": "c", "Ö": "o", "ö": "o", "Ü": "u", "ü": "u" };
@@ -86,7 +81,7 @@ function towardTarget(myPos, targetPos, origin, dest, threshold = 0.4) {
 const ilanNo = (id) => "HMT-" + String(id).padStart(4, "0");
 
 // ── Yük pini (divIcon) ──
-function loadIcon(l, active) {
+function loadIcon(l, active, C, MONO) {
   const fixed = l.priceType === "sabit";
   const bg = active ? C.ink : fixed ? C.yellow : C.card;
   const fg = active ? C.yellow : C.ink;
@@ -101,7 +96,7 @@ function loadIcon(l, active) {
     </div>`;
   return L.divIcon({ html, className: "saha-marker", iconSize: [0, 0], iconAnchor: [0, 26] });
 }
-function myPosIcon() {
+function myPosIcon(C) {
   const html = `<div style="display:flex;flex-direction:column;align-items:center;transform:translateY(-2px);"><div style="width:16px;height:16px;border-radius:50%;background:${C.blue};border:3px solid #fff;box-shadow:0 0 0 2px ${C.ink},2px 2px 6px rgba(0,0,0,.4);"></div></div>`;
   return L.divIcon({ html, className: "saha-marker", iconSize: [0, 0], iconAnchor: [0, 8] });
 }
@@ -120,9 +115,9 @@ function Recenter({ pos, zoom, active }) {
   return null;
 }
 
-function ZoomControls() {
+function ZoomControls({ C }) {
   const map = useMap();
-  const btn = { width: 36, height: 36, background: C.card, border: `2px solid ${C.ink}`, color: C.ink, fontFamily: HEAD, fontSize: 20, fontWeight: 900, lineHeight: 1, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" };
+  const btn = { width: 36, height: 36, background: C.card, border: `2px solid ${C.ink}`, color: C.text, fontFamily: C.head, fontSize: 20, fontWeight: 900, lineHeight: 1, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" };
   return (
     <div style={{ position: "absolute", top: 12, right: 12, zIndex: 500, display: "flex", flexDirection: "column", borderRadius: 6, overflow: "hidden", boxShadow: "2px 2px 0 rgba(10,10,10,.2)" }}>
       <button type="button" aria-label="Yakınlaştır" onClick={() => map.zoomIn()} style={{ ...btn, borderBottom: "none" }}>+</button>
@@ -131,7 +126,7 @@ function ZoomControls() {
   );
 }
 
-function Field({ label, children }) {
+function Field({ label, children, C, MONO }) {
   return (
     <label style={{ display: "flex", flexDirection: "column", gap: 3, minWidth: 0, flex: "1 1 130px" }}>
       <span style={{ fontFamily: MONO, fontSize: 8.5, fontWeight: 700, letterSpacing: ".06em", color: C.muted, textTransform: "uppercase" }}>{label}</span>
@@ -139,11 +134,17 @@ function Field({ label, children }) {
     </label>
   );
 }
-const selStyle = { fontFamily: MONO, fontSize: 12, fontWeight: 700, color: C.ink, padding: "7px 8px", background: C.card, border: `2px solid ${C.ink}`, borderRadius: 5, width: "100%", appearance: "none", cursor: "pointer" };
+const mkSelStyle = (C, MONO) => ({ fontFamily: MONO, fontSize: 12, fontWeight: 700, color: C.text, padding: "7px 8px", background: C.card, border: `2px solid ${C.ink}`, borderRadius: 5, width: "100%", appearance: "none", cursor: "pointer" });
 
-export default function TentaliDemo({ listings = [], offers = [], reviews = [], user, onClaim, onRequireAuth }) {
+export default function TentaliDemo({ listings = [], offers = [], reviews = [], user, onClaim, onRequireAuth, theme = "saha" }) {
   const navigate = useNavigate();
   const toast = useToast();
+
+  // ── Aktif tema: renkler + fontlar buradan. Tüm C./MONO/HEAD bunları kullanır. ──
+  const C = getTheme(theme);
+  const MONO = C.mono;
+  const HEAD = C.head;
+  const selStyle = mkSelStyle(C, MONO);
 
   const [myCity, setMyCity] = useState("İstanbul");
   const [targetCity, setTargetCity] = useState("");
@@ -262,40 +263,40 @@ export default function TentaliDemo({ listings = [], offers = [], reviews = [], 
 
       {/* ── Filtre çubuğu ── */}
       <div style={{ display: "flex", gap: 10, flexWrap: "wrap", padding: "10px 14px", background: C.stone, borderBottom: `2px solid ${C.ink}` }}>
-        <Field label={gps ? "Konumum (GPS)" : "Konumum"}>
+        <Field C={C} MONO={MONO} label={gps ? "Konumum (GPS)" : "Konumum"}>
           <select style={{ ...selStyle, opacity: gps ? 0.5 : 1 }} value={myCity} disabled={Boolean(gps)} onChange={(e) => { setMyCity(e.target.value); setSelected(null); }}>
             {cityOptions.map((c) => <option key={c} value={c}>{c}</option>)}
           </select>
         </Field>
-        <Field label="Gitmek istediğim yön">
+        <Field C={C} MONO={MONO} label="Gitmek istediğim yön">
           <select style={selStyle} value={targetCity} onChange={(e) => { setTargetCity(e.target.value); setSelected(null); }}>
             <option value="">Farketmez</option>
             {cityOptions.map((c) => <option key={c} value={c}>{c}</option>)}
           </select>
         </Field>
-        <Field label="Kategori">
+        <Field C={C} MONO={MONO} label="Kategori">
           <select style={selStyle} value={vehicle} onChange={(e) => { setVehicle(e.target.value); setSelected(null); }}>
             {VEHICLE_FILTERS.map((v) => <option key={v.key} value={v.key}>{v.label}</option>)}
           </select>
         </Field>
-        <Field label={`Yakınlık · ${radius} km`}>
-          <input type="range" min="50" max="600" step="25" value={radius} onChange={(e) => { setRadius(Number(e.target.value)); setSelected(null); }} style={{ width: "100%", accentColor: C.ink, height: 30 }} />
+        <Field C={C} MONO={MONO} label={`Yakınlık · ${radius} km`}>
+          <input type="range" min="50" max="600" step="25" value={radius} onChange={(e) => { setRadius(Number(e.target.value)); setSelected(null); }} style={{ width: "100%", accentColor: C.accent, height: 30 }} />
         </Field>
       </div>
 
       {/* ── Harita ── */}
       <div style={{ position: "relative", height: "58vh", minHeight: 340, borderBottom: `2px solid ${C.ink}` }}>
         <MapContainer center={[39.3, 35.2]} zoom={6} scrollWheelZoom={false} zoomControl={false} style={{ height: "100%", width: "100%" }}>
-          <TileLayer attribution="&copy; OpenStreetMap" url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+          <TileLayer attribution="&copy; OpenStreetMap" url={tileUrl(C)} />
           <Recenter pos={myPos} zoom={gps ? 9 : 7} active={Boolean(gps)} />
-          {myPos && <Marker position={myPos} icon={myPosIcon()} />}
+          {myPos && <Marker position={myPos} icon={myPosIcon(C)} />}
           {sel && sel._d && sel._d !== sel._o && (
-            <Polyline positions={[sel._o, sel._d]} pathOptions={{ color: C.ink, weight: 3, dashArray: "6 6" }} />
+            <Polyline positions={[sel._o, sel._d]} pathOptions={{ color: C.accent, weight: 3, dashArray: "6 6" }} />
           )}
           {visible.map((l) => (
-            <Marker key={l.id} position={l._o} icon={loadIcon(l, String(selected) === String(l.id))} eventHandlers={{ click: () => setSelected(l.id) }} />
+            <Marker key={l.id} position={l._o} icon={loadIcon(l, String(selected) === String(l.id), C, MONO)} eventHandlers={{ click: () => setSelected(l.id) }} />
           ))}
-          <ZoomControls />
+          <ZoomControls C={C} />
         </MapContainer>
 
         {/* Lejant */}
@@ -308,7 +309,7 @@ export default function TentaliDemo({ listings = [], offers = [], reviews = [], 
 
       {/* ── Detay kartı / liste ── */}
       {sel ? (
-        <LoadDetail load={sel} claimStatus={myClaimStatus.get(String(sel.id))} onClose={() => setSelected(null)} onClaim={() => claimLoad(sel)} onDetail={() => navigate(`/ilan/${sel.id}`)} onGoDispatch={() => navigate("/sevkiyat")} />
+        <LoadDetail C={C} MONO={MONO} HEAD={HEAD} load={sel} claimStatus={myClaimStatus.get(String(sel.id))} onClose={() => setSelected(null)} onClaim={() => claimLoad(sel)} onDetail={() => navigate(`/ilan/${sel.id}`)} onGoDispatch={() => navigate("/sevkiyat")} />
       ) : (
         <div style={{ padding: "12px 14px 96px" }}>
           {visible.length === 0 ? (
@@ -350,7 +351,7 @@ export default function TentaliDemo({ listings = [], offers = [], reviews = [], 
 }
 
 // ── Yük detayı + "Yükü Al" ──
-function LoadDetail({ load, claimStatus, onClose, onClaim, onDetail, onGoDispatch }) {
+function LoadDetail({ C, MONO, HEAD, load, claimStatus, onClose, onClaim, onDetail, onGoDispatch }) {
   const fixed = load.priceType === "sabit";
   const km = load._d && load._d !== load._o ? Math.round(distanceKm(load._o, load._d)) : null;
   const claimed = Boolean(claimStatus);            // herhangi bir claim var

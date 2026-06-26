@@ -500,7 +500,10 @@ function AppShell() {
                 <Route path="/iletisim" element={<PageTransition><IletisimPage /></PageTransition>} />
                 <Route path="/piyasa" element={<PageTransition><PiyasaNabziPage listings={listings} offers={offers} /></PageTransition>} />
                 <Route path="/fiyat-simulasyonu" element={<PageTransition><FiyatSimulasyonuPage /></PageTransition>} />
-                <Route path="/yuk-radari" element={<PageTransition><TentaliDemo listings={listings} offers={offers} reviews={reviews} user={profile || user} onClaim={claimLoad} onRequireAuth={requireAuth} /></PageTransition>} />
+                <Route path="/yuk-radari" element={<PageTransition><TentaliDemo theme="saha" listings={listings} offers={offers} reviews={reviews} user={profile || user} onClaim={claimLoad} onRequireAuth={requireAuth} /></PageTransition>} />
+                <Route path="/uber-rota" element={<PageTransition><TentaliDemo theme="rota" listings={listings} offers={offers} reviews={reviews} user={profile || user} onClaim={claimLoad} onRequireAuth={requireAuth} /></PageTransition>} />
+                <Route path="/uber-yol" element={<PageTransition><TentaliDemo theme="yol" listings={listings} offers={offers} reviews={reviews} user={profile || user} onClaim={claimLoad} onRequireAuth={requireAuth} /></PageTransition>} />
+                <Route path="/uber-akis" element={<PageTransition><TentaliDemo theme="akis" listings={listings} offers={offers} reviews={reviews} user={profile || user} onClaim={claimLoad} onRequireAuth={requireAuth} /></PageTransition>} />
                 <Route path="/marka-onizleme" element={<PageTransition><MarkaOnizleme /></PageTransition>} />
                 <Route path="/yasal/:slug" element={<PageTransition><LegalPage /></PageTransition>} />
                 <Route path="*" element={<PageTransition><NotFoundPage /></PageTransition>} />

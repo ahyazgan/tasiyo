@@ -4,6 +4,7 @@
 // Rota: /marka-onizleme
 
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 // Ortak telefon çerçevesi
 function Phone({ bg, children, label, tag }) {
@@ -226,6 +227,15 @@ function Akis() {
   );
 }
 
+function TryLive({ to, color, fg }) {
+  const navigate = useNavigate();
+  return (
+    <button onClick={() => navigate(to)} style={{ cursor: "pointer", marginTop: 4, background: color, color: fg, border: "none", borderRadius: 10, padding: "11px 20px", fontFamily: "'Archivo', sans-serif", fontWeight: 900, fontSize: 13, textTransform: "uppercase", letterSpacing: ".02em", boxShadow: "0 4px 12px rgba(0,0,0,.18)" }}>
+      Canlı Dene →
+    </button>
+  );
+}
+
 export default function MarkaOnizleme() {
   const [pick, setPick] = useState(null);
   return (
@@ -233,18 +243,24 @@ export default function MarkaOnizleme() {
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
         <h1 style={{ fontFamily: "'Archivo', sans-serif", fontWeight: 900, fontSize: 28, textTransform: "uppercase", letterSpacing: "-0.02em", color: "#0A0A0A", margin: 0 }}>Marka Dili — 3 Yön</h1>
         <p style={{ fontFamily: "'Space Mono', monospace", fontSize: 12, color: "#5A5852", marginTop: 6 }}>
-          Taşıyo ana sayfası, 3 farklı marka karakterinde. Birini seç → o dili tüm uygulamaya yayarım.
+          Taşıyo ana sayfası, 3 farklı marka karakterinde. <b>“Canlı Dene”</b> ile gerçek harita + yüklerle çalışan halini aç. Birini seç → o dili tüm uygulamaya yayarım.
         </p>
 
         <div style={{ display: "flex", gap: 36, flexWrap: "wrap", justifyContent: "center", marginTop: 28 }}>
-          <div onClick={() => setPick("ROTA")} style={{ cursor: "pointer", outline: pick === "ROTA" ? "3px solid #00E0A4" : "none", outlineOffset: 12, borderRadius: 8 }}><Rota /></div>
-          <div onClick={() => setPick("YOL")} style={{ cursor: "pointer", outline: pick === "YOL" ? "3px solid #F2C200" : "none", outlineOffset: 12, borderRadius: 8 }}><Yol /></div>
-          <div onClick={() => setPick("AKIŞ")} style={{ cursor: "pointer", outline: pick === "AKIŞ" ? "3px solid #FF5A1F" : "none", outlineOffset: 12, borderRadius: 8 }}><Akis /></div>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12, outline: pick === "ROTA" ? "3px solid #00E0A4" : "none", outlineOffset: 12, borderRadius: 8 }} onClick={() => setPick("ROTA")}>
+            <Rota /><TryLive to="/uber-rota" color="#0F1420" fg="#00E0A4" />
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12, outline: pick === "YOL" ? "3px solid #F2C200" : "none", outlineOffset: 12, borderRadius: 8 }} onClick={() => setPick("YOL")}>
+            <Yol /><TryLive to="/uber-yol" color="#23262B" fg="#F2C200" />
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12, outline: pick === "AKIŞ" ? "3px solid #FF5A1F" : "none", outlineOffset: 12, borderRadius: 8 }} onClick={() => setPick("AKIŞ")}>
+            <Akis /><TryLive to="/uber-akis" color="#FF5A1F" fg="#FFFFFF" />
+          </div>
         </div>
 
         {pick && (
           <div style={{ position: "fixed", bottom: 20, left: "50%", transform: "translateX(-50%)", background: "#0A0A0A", color: "#fff", fontFamily: "'Space Mono', monospace", fontSize: 13, fontWeight: 700, padding: "12px 22px", borderRadius: 10, boxShadow: "0 8px 24px rgba(0,0,0,.3)" }}>
-            Seçtin: <span style={{ color: "#FACC15" }}>{pick}</span> — bana "{pick} olsun" de, uygulamaya yayayım.
+            Seçtin: <span style={{ color: "#FACC15" }}>{pick}</span> — bana "{pick} olsun" de, ana sayfa yapayım.
           </div>
         )}
       </div>
