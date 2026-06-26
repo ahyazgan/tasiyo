@@ -10,6 +10,8 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { getCurrentPosition } from "../native/geo";
+import { computeReliability } from "../utils/reliability";
+import ReliabilityBadge from "../components/ReliabilityBadge";
 import { MapContainer, TileLayer, Marker, Polyline, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -139,7 +141,7 @@ function Field({ label, children }) {
 }
 const selStyle = { fontFamily: MONO, fontSize: 12, fontWeight: 700, color: C.ink, padding: "7px 8px", background: C.card, border: `2px solid ${C.ink}`, borderRadius: 5, width: "100%", appearance: "none", cursor: "pointer" };
 
-export default function TentaliDemo({ listings = [], offers = [], user, onClaim, onRequireAuth }) {
+export default function TentaliDemo({ listings = [], offers = [], reviews = [], user, onClaim, onRequireAuth }) {
   const navigate = useNavigate();
   const toast = useToast();
 
@@ -190,10 +192,12 @@ export default function TentaliDemo({ listings = [], offers = [], user, onClaim,
         const o = isLatLng(l.pickup) ? l.pickup : coordOf(l.il);
         const d = isLatLng(l.dropoff) ? l.dropoff : (coordOf(l.varisIl || l.bosaltma) || o);
         const precise = isLatLng(l.pickup); // gerçek pin mi, il merkezi mi
-        return { ...l, _o: o, _d: d, _precise: precise };
+        // Yük verenin güvenilirlik skoru (rozet için). ownerId yoksa null kalır.
+        const rel = l.ownerId != null ? computeReliability(l.ownerId, { listings, offers, reviews }) : null;
+        return { ...l, _o: o, _d: d, _precise: precise, _rel: rel };
       })
       .filter((l) => l._o);
-  }, [listings]);
+  }, [listings, offers, reviews]);
 
   // ── Çekirdek eşleştirme sorgusu (plan §6'nın JS karşılığı) ──
   const matched = useMemo(() => {
@@ -327,8 +331,11 @@ export default function TentaliDemo({ listings = [], offers = [], user, onClaim,
                         <span style={{ fontFamily: MONO, fontSize: 12, fontWeight: 700, color: fixed ? C.green : C.sub, whiteSpace: "nowrap" }}>{fixed && l.price ? `₺${l.price.toLocaleString("tr-TR")}` : "TEKLİFE AÇIK"}</span>
                       </div>
                       <div style={{ fontFamily: HEAD, textTransform: "uppercase", letterSpacing: "-.02em", fontSize: 14, fontWeight: 800, lineHeight: 1.15, marginTop: 3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{l.title}</div>
-                      <div style={{ fontFamily: MONO, fontSize: 9.5, fontWeight: 700, color: claimed ? C.green : C.sub, marginTop: 4 }}>
-                        {claimed ? "✓ ALINDI · ONAY BEKLENİYOR" : `${l.amount || "?"} ${(l.unit || "").toLocaleUpperCase("tr-TR")} · ${(l.cat || "").toLocaleUpperCase("tr-TR")}`}
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 4, flexWrap: "wrap" }}>
+                        <span style={{ fontFamily: MONO, fontSize: 9.5, fontWeight: 700, color: claimed ? C.green : C.sub }}>
+                          {claimed ? "✓ ALINDI · ONAY BEKLENİYOR" : `${l.amount || "?"} ${(l.unit || "").toLocaleUpperCase("tr-TR")} · ${(l.cat || "").toLocaleUpperCase("tr-TR")}`}
+                        </span>
+                        {!claimed && l._rel?.score != null && <ReliabilityBadge data={l._rel} size="sm" />}
                       </div>
                     </div>
                   </button>
@@ -371,6 +378,15 @@ function LoadDetail({ load, claimStatus, onClose, onClaim, onDetail, onGoDispatc
             <span>{km ? `~${km} KM GÜZERGAH · ` : ""}BANA {Math.round(load.originDist)} KM</span>
             {load._precise && <span style={{ color: C.green }}>● GERÇEK PİN</span>}
           </div>
+
+          {/* Yük veren güveni — güvenilirlik rozeti (skor varsa) */}
+          {load._rel?.score != null && (
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 10 }}>
+              <span style={{ fontFamily: MONO, fontSize: 9, fontWeight: 700, color: C.muted, letterSpacing: ".06em" }}>YÜK VEREN:</span>
+              <ReliabilityBadge data={load._rel} size="lg" />
+              {load._rel.jobsDone > 0 && <span style={{ fontFamily: MONO, fontSize: 9.5, fontWeight: 700, color: C.sub }}>{load._rel.jobsDone} İŞ</span>}
+            </div>
+          )}
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 12 }}>
             {[

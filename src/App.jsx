@@ -498,7 +498,7 @@ function AppShell() {
                 <Route path="/iletisim" element={<PageTransition><IletisimPage /></PageTransition>} />
                 <Route path="/piyasa" element={<PageTransition><PiyasaNabziPage listings={listings} offers={offers} /></PageTransition>} />
                 <Route path="/fiyat-simulasyonu" element={<PageTransition><FiyatSimulasyonuPage /></PageTransition>} />
-                <Route path="/yuk-radari" element={<PageTransition><TentaliDemo listings={listings} offers={offers} user={profile || user} onClaim={claimLoad} onRequireAuth={requireAuth} /></PageTransition>} />
+                <Route path="/yuk-radari" element={<PageTransition><TentaliDemo listings={listings} offers={offers} reviews={reviews} user={profile || user} onClaim={claimLoad} onRequireAuth={requireAuth} /></PageTransition>} />
                 <Route path="/yasal/:slug" element={<PageTransition><LegalPage /></PageTransition>} />
                 <Route path="*" element={<PageTransition><NotFoundPage /></PageTransition>} />
               </Routes>
