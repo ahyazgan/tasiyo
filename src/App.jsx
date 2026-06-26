@@ -59,6 +59,7 @@ const BildirimlerPage = lazy(() => import("./pages/BildirimlerPage"));
 const DispatchPage = lazy(() => import("./pages/DispatchPage"));
 const TripHistoryPage = lazy(() => import("./pages/TripHistoryPage"));
 const FiyatSimulasyonuPage = lazy(() => import("./pages/FiyatSimulasyonuPage"));
+const AracRadariPage = lazy(() => import("./pages/AracRadariPage"));
 // Genel & Tenteli Nakliye — kamyoncu harita demosu (Slice 3 prototip, bağımsız)
 const TentaliDemo = lazy(() => import("./pages/TentaliDemo"));
 // Marka dili önizleme — 3 yön karşılaştırma (geçici, seçim için)
@@ -502,6 +503,7 @@ function AppShell() {
                 <Route path="/iletisim" element={<PageTransition><IletisimPage /></PageTransition>} />
                 <Route path="/piyasa" element={<PageTransition><PiyasaNabziPage listings={listings} offers={offers} /></PageTransition>} />
                 <Route path="/fiyat-simulasyonu" element={<PageTransition><FiyatSimulasyonuPage /></PageTransition>} />
+                <Route path="/arac-radari" element={<PageTransition><AracRadariPage user={profile || user} /></PageTransition>} />
                 <Route path="/yuk-radari" element={<PageTransition><TentaliDemo theme="saha" listings={listings} offers={offers} reviews={reviews} user={profile || user} onClaim={claimLoad} onRequireAuth={requireAuth} /></PageTransition>} />
                 <Route path="/uber-rota" element={<PageTransition><TentaliDemo theme="rota" listings={listings} offers={offers} reviews={reviews} user={profile || user} onClaim={claimLoad} onRequireAuth={requireAuth} /></PageTransition>} />
                 <Route path="/uber-yol" element={<PageTransition><TentaliDemo theme="yol" listings={listings} offers={offers} reviews={reviews} user={profile || user} onClaim={claimLoad} onRequireAuth={requireAuth} /></PageTransition>} />

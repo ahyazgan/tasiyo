@@ -123,6 +123,13 @@ export default function MuteahhitPage() {
             İlan ver — ücretsiz <ArrowRight size={16} strokeWidth={2.5} />
           </button>
           <button
+            onClick={() => navigate("/arac-radari")}
+            className="inline-flex items-center justify-center gap-1.5 px-5 py-3 text-[12px] font-extrabold uppercase"
+            style={{ background: "transparent", color: C.yellow, border: `2px solid ${C.yellow}`, borderRadius: 6, fontFamily: ARCH }}
+          >
+            Yakındaki araçları gör <ArrowRight size={15} strokeWidth={2.5} />
+          </button>
+          <button
             onClick={() => navigate("/ilanlar?type=urun")}
             className="inline-flex items-center justify-center gap-1.5 px-5 py-3 text-[12px] font-extrabold uppercase"
             style={{ background: "transparent", color: C.yellow, border: `2px solid ${C.yellow}`, borderRadius: 6, fontFamily: ARCH }}

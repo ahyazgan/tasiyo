@@ -9,7 +9,8 @@
 
 import { useState, useMemo, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { getCurrentPosition } from "../native/geo";
+import { getCurrentPosition, watchPosition } from "../native/geo";
+import { publishPresence, removePresence } from "../utils/presence";
 import { computeReliability } from "../utils/reliability";
 import ReliabilityBadge from "../components/ReliabilityBadge";
 import { MapContainer, TileLayer, Marker, Polyline, useMap } from "react-leaflet";
@@ -172,6 +173,53 @@ export default function TentaliDemo({ listings = [], offers = [], reviews = [], 
   };
   const clearGps = () => { setGps(null); setGpsStatus("idle"); setSelected(null); };
 
+  // ── Çevrimiçi yayın (presence): sürücü "çevrimiçi" olunca konumunu yük
+  //    verenlere yayınlar → müteahhitin "Yakındaki Araçlar" radarında görünür. ──
+  const [online, setOnline] = useState(false);
+  const driverMeta = useMemo(() => (user ? {
+    id: user.id,
+    name: user.name || "Nakliyeci",
+    cat: vehicle || user.cat || null,
+    capacity: user.capacity || null,
+    rating: user.rating || 0,
+    target: targetCity || null,
+  } : null), [user, vehicle, targetCity]);
+
+  const metaRef = useRef(null);
+  const myPosRef = useRef(null);
+  useEffect(() => { metaRef.current = driverMeta; myPosRef.current = myPos; }, [driverMeta, myPos]);
+
+  const toggleOnline = () => {
+    if (!user) { onRequireAuth?.(); return; }
+    setOnline((v) => {
+      const next = !v;
+      toast(next ? "Çevrimiçisin — yük verenler seni haritada görüyor." : "Çevrimdışı oldun.", next ? "success" : "info");
+      return next;
+    });
+  };
+
+  // Yayın yaşam döngüsü: çevrimiçiyken GPS akışı + heartbeat, çıkışta sil.
+  useEffect(() => {
+    if (!online) return;
+    let alive = true; let stopWatch = () => {};
+    const push = (pt) => {
+      const m = metaRef.current;
+      if (!m || !pt || !Number.isFinite(pt[0]) || !Number.isFinite(pt[1])) return;
+      publishPresence({ ...m, lat: pt[0], lng: pt[1], heading: pt[2] ?? null });
+    };
+    push(myPosRef.current);
+    watchPosition((p) => { if (alive) push([p.lat, p.lng, p.heading]); }, () => {})
+      .then((fn) => { if (alive) stopWatch = fn; else fn?.(); });
+    const hb = setInterval(() => push(myPosRef.current), 15000);
+    return () => { alive = false; clearInterval(hb); stopWatch(); const m = metaRef.current; if (m) removePresence(m.id); };
+  }, [online]);
+
+  // Meta/konum değişince anında tazele (yön, kategori, şehir değişimi).
+  useEffect(() => {
+    if (!online || !driverMeta || !myPos) return;
+    publishPresence({ ...driverMeta, lat: myPos[0], lng: myPos[1] });
+  }, [online, driverMeta, myPos]);
+
   // Bu kullanıcının ilan başına claim durumu (listingId -> "beklemede"|"kabul"|"ret").
   // Tekrar kapamayı engellemek ve "onay bekleniyor" rozetini göstermek için.
   const myClaimStatus = useMemo(() => {
@@ -259,6 +307,20 @@ export default function TentaliDemo({ listings = [], offers = [], reviews = [], 
             {gpsStatus === "loading" ? "Konum bulunuyor…" : gpsStatus === "denied" ? "Tekrar dene" : "Konumumu Bul"}
           </button>
         )}
+      </div>
+
+      {/* ── Çevrimiçi yayın anahtarı (sürücüyü yük verenlere görünür yapar) ── */}
+      <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px 0", background: C.stone }}>
+        <button type="button" onClick={toggleOnline} aria-pressed={online} style={{ display: "flex", alignItems: "center", gap: 9, flex: 1, minWidth: 0, padding: "9px 12px", borderRadius: 6, cursor: "pointer", textAlign: "left", background: online ? C.green : C.card, color: online ? "#fff" : C.text, border: `2px solid ${C.ink}`, boxShadow: online ? `0 0 0 4px ${C.green}33` : "2px 2px 0 rgba(10,10,10,.12)", transition: "all .15s" }}>
+          <span style={{ width: 11, height: 11, borderRadius: "50%", flexShrink: 0, background: online ? "#fff" : C.muted, boxShadow: online ? `0 0 0 3px #ffffff55` : "none" }} />
+          <span style={{ display: "flex", flexDirection: "column", minWidth: 0 }}>
+            <span style={{ fontFamily: HEAD, fontSize: 13, fontWeight: 800, textTransform: "uppercase", letterSpacing: ".02em" }}>{online ? "Çevrimiçisin" : "Çevrimiçi Ol"}</span>
+            <span style={{ fontFamily: MONO, fontSize: 9, fontWeight: 700, opacity: .85, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{online ? "Yük verenler seni haritada görüyor" : "Yük verenlere görün · iş teklifi al"}</span>
+          </span>
+          <span style={{ marginLeft: "auto", flexShrink: 0, position: "relative", width: 40, height: 22, borderRadius: 12, background: online ? "#ffffff55" : C.faint || C.border, border: `2px solid ${online ? "#fff" : C.ink}` }}>
+            <span style={{ position: "absolute", top: 1, width: 14, height: 14, borderRadius: "50%", background: online ? "#fff" : C.card, border: `2px solid ${C.ink}`, right: online ? 2 : 20, transition: "right .15s" }} />
+          </span>
+        </button>
       </div>
 
       {/* ── Filtre çubuğu ── */}
