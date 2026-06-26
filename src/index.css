@@ -1,0 +1,181 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
+
+/* ═══════════════════════════════════════════════════════════════════
+   index.css — sadece global temel + tema değişkenleri + Tailwind dışı
+   kalan canlı yardımcı sınıflar.
+   Tüm sayfa/bileşen tasarımı artık Tailwind utility ile yapılıyor.
+   (Eski Vite e-ticaret CSS'i kaldırıldı.)
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ═══ CSS VARIABLES (THEME) — tema butonunu ve dark mode'u besler ═══ */
+:root,
+[data-theme="light"] {
+  --bg: #F3F4F6;
+  --bg-card: #FFFFFF;
+  --border: #E6E8EC;
+  --border-light: #F0F1F4;
+  --accent: #F5B301;
+  --accent-text: #1A1B20;
+  --accent-bg: #F5B3011A;
+  --accent-border: #F5B30140;
+  --text: #11141A;
+  --text-sec: #5B6472;
+  --text-ter: #9AA1AC;
+  --green: #2E7D42;
+  --green-bg: #E8F5E9;
+  --blue: #2E6FA3;
+  --blue-bg: #E3F2FD;
+  --amber: #A07828;
+  --amber-bg: #FFF8E1;
+  --red: #B0423A;
+  --shadow: 0 1px 3px rgba(17,20,26,.06), 0 1px 2px rgba(17,20,26,.04);
+  --shadow-hover: 0 10px 30px rgba(17,20,26,.10), 0 3px 10px rgba(17,20,26,.05);
+  --header-bg: #FFFFFFEE;
+  --hero-bg: linear-gradient(135deg, #FFFFFF 0%, #F3F4F6 45%, #FEF6E0 100%);
+}
+
+[data-theme="dark"] {
+  --bg: #11141A;
+  --bg-card: #1B222D;
+  --border: #2A323F;
+  --border-light: #232C3A;
+  --accent: #FACC15;
+  --accent-text: #11141A;
+  --accent-bg: #FACC1518;
+  --accent-border: #FACC1540;
+  --text: #F1F5F9;
+  --text-sec: #94A3B8;
+  --text-ter: #6C7B93;
+  --green: #4ADE80;
+  --green-bg: #14321C;
+  --blue: #5CA8DC;
+  --blue-bg: #14283A;
+  --amber: #FACC15;
+  --amber-bg: #2E2A10;
+  --red: #F87171;
+  --shadow: 0 1px 3px rgba(0,0,0,.4);
+  --shadow-hover: 0 10px 30px rgba(0,0,0,.5);
+  --header-bg: #11141AF2;
+  --hero-bg: linear-gradient(135deg, #1B222D 0%, #11141A 55%, #232C3A 100%);
+}
+
+/* ═══ RESET (Tailwind preflight kapalı olduğu için elde tutuluyor) ═══ */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; transition: background .3s, color .3s; }
+a { text-decoration: none; color: inherit; }
+button { font-family: inherit; cursor: pointer; }
+input, textarea, select { font-family: inherit; }
+
+/* ═══ APP ROOT — SADECE MOBİL APP ═══
+   Tüm uygulama telefon genişliğinde (max 460px) ortalanmış tek kolon.
+   Geniş ekranda kolonun etrafı koyu/nötr zeminle çevrilir (app vitrini). */
+body { background: #16140F; } /* telefon kolonunun dışındaki zemin (geniş ekran) */
+.app-root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 460px;
+  margin: 0 auto;
+  background: var(--bg);
+  position: relative;
+  box-shadow: 0 0 60px rgba(0,0,0,.45); /* geniş ekranda kolonu zeminden ayır */
+}
+main { flex: 1; }
+
+/* ═══ LAYOUT (ErrorBoundary / NotFound / Suspense fallback) ═══ */
+.page-content { max-width: 1160px; margin: 0 auto; padding: 28px 20px 80px; }
+
+/* ═══ BUTTONS (ErrorBoundary) ═══ */
+.btn-primary { background: var(--accent); border: none; color: var(--accent-text); padding: 7px 18px; border-radius: 999px; font-size: 13px; font-weight: 700; box-shadow: 0 4px 16px rgba(245,179,1,.30); transition: opacity .2s, transform .2s; }
+.btn-primary:hover { opacity: .9; }
+.btn-lg { padding: 13px 36px; font-size: 15px; font-weight: 700; border-radius: 10px; }
+
+/* ═══ PAGE TITLE (ErrorBoundary / NotFound) ═══ */
+.page-title { font-size: 32px; font-weight: 900; letter-spacing: -1.5px; margin: 0; }
+
+/* ═══ ERROR / NOTFOUND KARTI ═══ */
+.order-confirm-card { max-width: 600px; margin: 0 auto; text-align: center; background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; padding: 48px 36px; box-shadow: var(--shadow); }
+
+/* ═══ SKELETON LOADING (Skeleton.jsx) ═══ */
+.product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+.skeleton-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 22px; }
+.skeleton-line { height: 14px; background: var(--border-light); border-radius: 6px; margin-bottom: 12px; animation: shimmer 1.5s infinite ease-in-out; }
+.skeleton-sm { height: 10px; }
+.skeleton-lg { height: 20px; }
+.skeleton-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border-light); }
+@keyframes shimmer { 0%,100% { opacity: .4; } 50% { opacity: .8; } }
+
+/* SAHA shimmer — sliding light sweep over manila fill */
+.saha-shimmer { position: relative; overflow: hidden; }
+.saha-shimmer::after {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,.55) 50%, transparent 100%);
+  transform: translateX(-100%);
+  animation: sahaShimmer 1.4s infinite;
+}
+@keyframes sahaShimmer { 100% { transform: translateX(100%); } }
+
+/* ═══ TOAST (Toast.jsx) ═══ */
+.toast-container { position: fixed; bottom: 90px; right: 24px; z-index: 300; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
+.toast { pointer-events: auto; display: flex; align-items: center; gap: 10px; padding: 12px 20px; border-radius: 10px; font-size: 13px; font-weight: 600; color: #fff; box-shadow: 0 8px 24px rgba(0,0,0,.2); animation: toastIn .3s ease; min-width: 240px; }
+.toast-success { background: #2E7D42; }
+.toast-error { background: #B0423A; }
+.toast-info { background: #2E6FA3; }
+.toast-icon { font-size: 16px; font-weight: 700; }
+@keyframes toastIn {
+  from { opacity: 0; transform: translateY(12px) scale(.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ═══ WHATSAPP (WhatsAppButton.jsx) ═══ */
+.whatsapp-btn { position: fixed; bottom: 24px; right: 24px; width: 56px; height: 56px; border-radius: 50%; background: #25D366; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 16px rgba(37,211,102,.4); z-index: 99; font-size: 28px; color: #fff; transition: transform .2s; }
+.whatsapp-btn:hover { transform: scale(1.1); }
+
+/* ═══ RESPONSIVE — TABLET ═══ */
+@media (max-width: 1024px) {
+  .product-grid { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+}
+
+/* ═══ YAZDIRMA (sözleşme/irsaliye) ═══ */
+@media print {
+  header, footer, nav[aria-label="Alt gezinme"], .whatsapp-btn { display: none !important; }
+  body, .app-root, main { background: #fff !important; }
+  main { padding: 0 !important; }
+}
+
+/* Aşağı-çekip-yenile dönen ikon */
+@keyframes ptr-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+/* ═══ NATIVE (Capacitor iOS/Android) — uygulama hissi ═══ */
+/* <html class="native-app"> yalnızca native kabukta eklenir (src/native/capacitor.js). */
+/* Güvenli alan (çentik/status bar/home indicator) Capacitor tarafından otomatik
+   yönetilir: iOS contentInset:"always" + Android StatusBar.overlaysWebView(false).
+   Alt tab bar zaten env(safe-area-inset-bottom) kullanıyor. Bu yüzden burada
+   manuel üst boşluk YOK — sticky top:0 header'larla çakışmasın. */
+/* Native modda metin seçimi/uzun basma menüsü ve mavi tap highlight kapalı —
+   daha "uygulama gibi" his (input/textarea hariç). */
+html.native-app * {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+}
+html.native-app input,
+html.native-app textarea,
+html.native-app [contenteditable="true"] {
+  -webkit-user-select: text;
+  user-select: text;
+}
+/* iOS'ta lastik-bant (overscroll) içeride kalsın. */
+html.native-app, html.native-app body {
+  overscroll-behavior-y: none;
+}
+
+/* ═══ RESPONSIVE — MOBILE ═══ */
+@media (max-width: 768px) {
+  .app-root { padding-bottom: 70px; } /* alt tab bar için boşluk */
+  .whatsapp-btn { bottom: 88px; }
+  .page-content { padding: 20px 16px 60px; }
+  .product-grid { grid-template-columns: 1fr; }
+  .toast-container { left: 16px; right: 16px; bottom: 90px; }
+  .toast { min-width: auto; }
+}

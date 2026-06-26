@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">YÜKLET</string>
+    <string name="title_activity_main">YÜKLET</string>
+    <string name="package_name">com.yuklet.app</string>
+    <string name="custom_url_scheme">com.yuklet.app</string>
+</resources>

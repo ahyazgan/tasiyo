@@ -1,0 +1,23 @@
+{
+  "name": "YÜKLET — Yük & Nakliye Eşleştirme",
+  "short_name": "YÜKLET",
+  "description": "Hafriyat ve silobas/dökme yük taşımacılığında iş sahibi, tedarikçi ve nakliyeciyi buluşturan ilan & eşleştirme platformu.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "lang": "tr",
+  "dir": "ltr",
+  "background_color": "#11141a",
+  "theme_color": "#1b222d",
+  "categories": ["business", "productivity", "navigation"],
+  "icons": [
+    { "src": "/logo-icon.png", "sizes": "500x500", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-maskable.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "İlan ver", "short_name": "İlan ver", "url": "/ilan-ver", "description": "Yeni iş veya araç ilanı oluştur" },
+    { "name": "İlanlar", "short_name": "İlanlar", "url": "/ilanlar", "description": "Açık ilanlara göz at" },
+    { "name": "Mesajlar", "short_name": "Mesajlar", "url": "/mesajlar", "description": "Sohbetlerine git" }
+  ]
+}
